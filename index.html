@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Orleans Property Services | Boutique Real Estate — Kari Ayala</title>
+<meta name="description" content="Boutique New Orleans real estate brokerage founded in 2007 by Kari Ayala. White-glove service for buyers, sellers & investors — historic homes and local expertise. Call 504-473-5969.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/logo.png">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ===== Top bar ===== -->
+<div class="topbar">
+  <div class="container">
+    <div class="topbar__left">
+      <span>📞 <a href="tel:5044735969">504-473-5969</a></span>
+      <span>✉ <a href="mailto:kari@neworleanspropertyservices.com">kari@neworleanspropertyservices.com</a></span>
+      <span>📍 2801 St. Charles Ave, Unit 111B, New Orleans, LA 70115</span>
+    </div>
+    <div class="topbar__social">
+      <a href="#">Instagram</a>
+      <a href="#">Facebook</a>
+      <a href="#">LinkedIn</a>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Header ===== -->
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="index.html"><img class="brand__logo" src="assets/logo-dark.png" alt="New Orleans Property Services"></a>
+    <nav class="nav" id="nav">
+      <a href="index.html" class="active">Home</a>
+      <a href="buyers.html">Buy</a>
+      <a href="sellers.html">Sell</a>
+      <a href="communities.html">Communities</a>
+      <a href="blog.html">Journal</a>
+      <a href="about.html">About</a>
+      <a href="contact.html" class="btn btn--gold" style="color:#fff">Contact</a>
+    </nav>
+    <button class="nav-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- ===== Hero ===== -->
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__text reveal">
+      <p class="eyebrow">New Orleans · Since 1998</p>
+      <h1>Your home in the city we know by heart.</h1>
+      <p class="lead">A boutique brokerage delivering white-glove service to buyers, sellers, and investors — with an intimate knowledge of every street, corner, and historic block of New Orleans.</p>
+      <div class="hero__actions">
+        <a href="buyers.html" class="btn btn--gold">Find Your Home →</a>
+        <a href="sellers.html" class="btn btn--ghost">Get a Home Valuation</a>
+      </div>
+      <div class="hero__stats">
+        <div class="stat"><div class="stat__num">337+</div><div class="stat__label">Families Served</div></div>
+        <div class="stat"><div class="stat__num">$125M+</div><div class="stat__label">In Home Sales</div></div>
+        <div class="stat"><div class="stat__num">25+</div><div class="stat__label">Years in NOLA</div></div>
+        <div class="stat"><div class="stat__num">5.0★</div><div class="stat__label">Client Rating</div></div>
+      </div>
+    </div>
+    <div class="hero__media reveal">
+      <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1000&q=80" alt="A classic New Orleans home">
+      <div class="hero__media-badge"><span class="fleur">⚜</span><span><b>Est. 2007</b><span>Boutique &amp; locally owned</span></span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Search bar (maps to IDX search) ===== -->
+<div class="container">
+  <form class="searchbar" data-demo>
+    <div class="field">
+      <label>Neighborhood</label>
+      <select><option>Any area</option><option>Garden District</option><option>Uptown</option><option>French Quarter</option><option>Marigny / Bywater</option><option>Lakeview</option><option>Mid-City</option></select>
+    </div>
+    <div class="field">
+      <label>Type</label>
+      <select><option>All homes</option><option>Single-family</option><option>Historic / Creole</option><option>Condo</option><option>Multi-family</option><option>Investment</option></select>
+    </div>
+    <div class="field">
+      <label>Max Price</label>
+      <select><option>No max</option><option>$400k</option><option>$600k</option><option>$800k</option><option>$1M+</option></select>
+    </div>
+    <button class="btn btn--gold" type="submit">Search MLS</button>
+  </form>
+</div>
+
+<!-- ===== Featured listings (IDX placeholder) ===== -->
+<section class="section">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Featured Listings</p>
+      <h2>Handpicked homes across the city</h2>
+      <p class="lead center">A preview of the live listings grid. On the WordPress site this section connects to the GSREIN MLS via IDX, refreshing automatically with real inventory.</p>
+    </div>
+
+    <div class="grid grid--3 reveal" style="margin-top:48px">
+      <article class="card">
+        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80')">
+          <span class="property__tag">For Sale</span><span class="property__price">$685,000</span>
+        </div>
+        <div class="property__body">
+          <span class="property__hood">Garden District</span>
+          <h3 class="property__addr">1420 Prytania Street</h3>
+          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Restored Greek Revival with original millwork and a wrought-iron gallery.</p>
+          <div class="property__meta"><span><b>3</b> Beds</span><span><b>2.5</b> Baths</span><span><b>2,340</b> Sq Ft</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80')">
+          <span class="property__tag">New</span><span class="property__price">$429,000</span>
+        </div>
+        <div class="property__body">
+          <span class="property__hood">Marigny</span>
+          <h3 class="property__addr">738 Marigny Street</h3>
+          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Classic Creole cottage steps from Frenchmen Street, freshly renovated.</p>
+          <div class="property__meta"><span><b>2</b> Beds</span><span><b>2</b> Baths</span><span><b>1,510</b> Sq Ft</span></div>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80')">
+          <span class="property__tag">Investor</span><span class="property__price">$975,000</span>
+        </div>
+        <div class="property__body">
+          <span class="property__hood">Uptown</span>
+          <h3 class="property__addr">5019 Magazine Street</h3>
+          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Turn-key duplex with strong rental history near the shopping corridor.</p>
+          <div class="property__meta"><span><b>4</b> Beds</span><span><b>4</b> Baths</span><span><b>3,120</b> Sq Ft</span></div>
+        </div>
+      </article>
+    </div>
+
+    <div class="center" style="margin-top:44px">
+      <a href="buyers.html" class="btn btn--ghost">View All Listings</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Services ===== -->
+<section class="section tone-cream">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">How We Help</p>
+      <h2>Full-service guidance, start to finish</h2>
+    </div>
+    <div class="grid grid--3 reveal" style="margin-top:48px">
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/></svg></div>
+        <h3>Buying a Home</h3>
+        <p>From first tour to closing table, we help you find and win the right home — with sharp local insight on value, condition, and neighborhood fit.</p>
+      </div>
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 13 12 4l9 9"/><path d="M6 21V12h12v9"/><path d="M12 8v4M10 10h4"/></svg></div>
+        <h3>Selling a Home</h3>
+        <p>Strategic pricing, standout marketing, and skilled negotiation to sell your home for the most the market will bear — with as little friction as possible.</p>
+      </div>
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 21h18"/><path d="M4 21V9l5-3 5 3v12"/><path d="M14 21V13l4-2 2 1v9"/></svg></div>
+        <h3>Investment Property</h3>
+        <p>Rental analysis, short-term rental guidance, and off-market opportunities for investors building a portfolio in a one-of-a-kind market.</p>
+      </div>
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3 4 6v6c0 5 3.5 7.5 8 9 4.5-1.5 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></div>
+        <h3>Historic Homes</h3>
+        <p>Deep expertise with New Orleans' shotguns, Creole cottages, and Victorian doubles — including renovation, restoration, and preservation considerations.</p>
+      </div>
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5 8 12 8 12s8-7 8-12a8 8 0 0 0-8-8Z"/></svg></div>
+        <h3>Relocation</h3>
+        <p>Moving to New Orleans? We orient you to the neighborhoods, schools, and rhythms of the city so your first home here truly feels like home.</p>
+      </div>
+      <div class="service">
+        <div class="service__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 4h16v12H4z"/><path d="M4 9h16"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <h3>Market Valuation</h3>
+        <p>A precise, data-backed opinion of value for your home or prospective purchase — grounded in real comparable sales, not an algorithm.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Market pulse ===== -->
+<section class="section tone-paper2">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Market Pulse</p>
+      <h2>The New Orleans market at a glance</h2>
+      <p class="lead center">A snapshot of local conditions. On the live site these figures update automatically from current MLS data.</p>
+    </div>
+    <div class="grid grid--4 reveal" style="margin-top:44px">
+      <div class="mstat"><div class="n">$345K</div><div class="l">Median Sale Price</div><div class="d up">3.1% YoY</div></div>
+      <div class="mstat"><div class="n">42</div><div class="l">Avg. Days on Market</div><div class="d dn">6 days faster</div></div>
+      <div class="mstat"><div class="n">$212</div><div class="l">Median $ / Sq Ft</div><div class="d up">2.4% YoY</div></div>
+      <div class="mstat"><div class="n">1,180</div><div class="l">Homes for Sale</div><div class="d">Updated weekly</div></div>
+    </div>
+    <p class="center" style="color:var(--muted);font-size:.82rem;margin-top:22px">Sample figures shown for the preview — not current market data.</p>
+  </div>
+</section>
+
+<!-- ===== About split ===== -->
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div class="split__media reveal">
+        <img src="assets/kari.png" alt="Kari Ayala, founder of New Orleans Property Services">
+        <div class="split__badge"><div class="num">Est. 2007</div><div class="lbl">Founded &amp; independently owned in New Orleans</div></div>
+      </div>
+      <div class="reveal">
+        <p class="eyebrow">Meet Kari Ayala</p>
+        <h2>A local's knowledge, a professional's care.</h2>
+        <p class="lead">Kari Kramer Ayala has been part of the New Orleans real estate market since 1998 and founded New Orleans Property Services in 2007. What began as a one-agent practice has grown into a trusted boutique brokerage built on professionalism, discretion, and genuine care.</p>
+        <p>A Fulbright Scholar with graduate training from Tulane, Kari brings rigor and warmth to every transaction — and an intimate familiarity with the character of each neighborhood. Deeply rooted in the community, she co-founded the International School of Louisiana and serves as President of the Krewe of Dolly.</p>
+        <ul class="check">
+          <li>Licensed REALTOR® since 2004 · 25+ years of local market experience</li>
+          <li>337+ families &amp; individuals guided home</li>
+          <li>Boutique, high-touch service — you work directly with Kari</li>
+        </ul>
+        <div style="margin-top:30px"><a href="about.html" class="btn btn--dark">Read Kari's Story →</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== In the community ===== -->
+<section class="section tone-cream">
+  <div class="container">
+    <div class="split">
+      <div class="split__media reveal"><img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80" alt="New Orleans street life"></div>
+      <div class="reveal">
+        <p class="eyebrow">In the Community</p>
+        <h2>Rooted in the life of the city.</h2>
+        <p class="lead">Kari's connection to New Orleans runs deeper than real estate — and it's exactly what makes her guidance more than transactional.</p>
+        <p>She co-founded the International School of Louisiana, a public charter offering full-immersion programs in Spanish and French, and serves as President of the Krewe of Dolly, a nonprofit supporting Dolly Parton's Imagination Library.</p>
+        <ul class="pills">
+          <li><b>Co-Founder</b> · Intl. School of Louisiana</li>
+          <li><b>President</b> · Krewe of Dolly</li>
+          <li><b>Supporter</b> · Imagination Library</li>
+          <li><b>Fulbright</b> Scholar</li>
+        </ul>
+        <div style="margin-top:28px"><a href="about.html" class="btn btn--dark">More About Kari →</a></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Why choose (dark) ===== -->
+<section class="section tone-dark">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">The Difference</p>
+      <h2>Why clients choose a boutique brokerage</h2>
+      <p class="lead center">Big enough to get it done, small enough to truly know you.</p>
+    </div>
+    <div class="grid grid--4 reveal" style="margin-top:48px">
+      <div class="value"><div class="num">01</div><h3>Direct Access</h3><p>You work with Kari herself — not a rotating team. One relationship, start to finish.</p></div>
+      <div class="value"><div class="num">02</div><h3>Hyper-Local</h3><p>Street-by-street knowledge of value, history, flood, and character across the city.</p></div>
+      <div class="value"><div class="num">03</div><h3>White-Glove Service</h3><p>Discreet, attentive, and thorough — the standard of care our clients return to.</p></div>
+      <div class="value"><div class="num">04</div><h3>Proven Results</h3><p>$125M+ closed and 337+ families served across more than two decades.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Neighborhoods ===== -->
+<section class="section tone-paper2">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Explore the City</p>
+      <h2>Neighborhoods we call home</h2>
+    </div>
+    <div class="grid grid--4 reveal" style="margin-top:48px">
+      <a class="hood" href="communities.html" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
+      <a class="hood" href="communities.html" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
+      <a class="hood" href="communities.html" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
+      <a class="hood" href="communities.html" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Marigny / Bywater</h3><span>Creole cottages &amp; color</span></span></a>
+    </div>
+    <div class="center" style="margin-top:40px"><a href="communities.html" class="btn btn--ghost">Explore All Neighborhoods</a></div>
+  </div>
+</section>
+
+<!-- ===== Instagram ===== -->
+<section class="section">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Follow Along</p>
+      <h2>@nolakari1 on Instagram</h2>
+      <p class="lead center">New listings, sold celebrations, and a local's view of New Orleans — pulled straight from Instagram so the site stays current.</p>
+    </div>
+    <div class="ig-grid reveal" style="margin-top:40px">
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=400&q=70')"></a>
+    </div>
+    <div class="center" style="margin-top:34px"><a href="#" class="btn btn--ghost">Follow @nolakari1</a></div>
+  </div>
+</section>
+
+<!-- ===== NOLA Journal ===== -->
+<section class="section tone-cream">
+  <div class="container">
+    <div class="reveal" style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px">
+      <div><p class="eyebrow">New Orleans Journal</p><h2>Local insight &amp; market notes</h2></div>
+      <a href="blog.html" class="btn btn--ghost">Read the Journal →</a>
+    </div>
+    <div class="grid grid--3 reveal" style="margin-top:44px">
+      <article class="card post">
+        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=700&q=75')"></div>
+        <div class="post__body">
+          <span class="post__cat">Buying Guide</span>
+          <a href="blog.html" class="post__title" style="display:block">Buying a Historic Home in New Orleans: Flood Zones, Elevation &amp; Insurance</a>
+          <p class="post__excerpt">What every buyer should understand about elevation certificates, flood zones, and insurance before falling for that gorgeous shotgun.</p>
+          <div class="post__meta"><span>Jun 28, 2026</span><span class="post__read">5 min read</span></div>
+        </div>
+      </article>
+      <article class="card post">
+        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=700&q=75')"></div>
+        <div class="post__body">
+          <span class="post__cat">Neighborhoods</span>
+          <a href="blog.html" class="post__title" style="display:block">Garden District vs. Marigny: Which Neighborhood Fits You?</a>
+          <p class="post__excerpt">Two beloved but very different corners of the city — here's how to think about lifestyle, value, and vibe.</p>
+          <div class="post__meta"><span>Jun 12, 2026</span><span class="post__read">4 min read</span></div>
+        </div>
+      </article>
+      <article class="card post">
+        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=700&q=75')"></div>
+        <div class="post__body">
+          <span class="post__cat">Market Update</span>
+          <a href="blog.html" class="post__title" style="display:block">New Orleans Market Update: Summer 2026</a>
+          <p class="post__excerpt">Where prices, inventory, and buyer demand stand across the city as we move through the season.</p>
+          <div class="post__meta"><span>Jun 1, 2026</span><span class="post__read">3 min read</span></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Process ===== -->
+<section class="section">
+  <div class="container">
+    <div class="split">
+      <div class="reveal">
+        <p class="eyebrow">The Process</p>
+        <h2>Simple, transparent, and on your side.</h2>
+        <p class="lead">Whether you're buying or selling, you'll always know exactly where you stand and what comes next.</p>
+        <div style="margin-top:28px"><a href="contact.html" class="btn btn--gold">Start a Conversation →</a></div>
+      </div>
+      <div class="steps reveal">
+        <div class="step"><div class="step__no"></div><div><h3>Discovery</h3><p>We start with a conversation about your goals, timeline, and the life you want your home to fit.</p></div></div>
+        <div class="step"><div class="step__no"></div><div><h3>Strategy</h3><p>A tailored plan — a targeted search for buyers, or pricing and marketing for sellers.</p></div></div>
+        <div class="step"><div class="step__no"></div><div><h3>Negotiation</h3><p>Skilled, level-headed representation to protect your interests and your bottom line.</p></div></div>
+        <div class="step"><div class="step__no"></div><div><h3>Closing &amp; Beyond</h3><p>We manage the details to the finish line — and stay a resource long after the keys change hands.</p></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Testimonials ===== -->
+<section class="section tone-cream">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Client Stories</p>
+      <h2>Trusted across the city</h2>
+    </div>
+    <div class="grid grid--3 reveal" style="margin-top:48px">
+      <div class="quote">
+        <div class="quote__stars">★★★★★</div>
+        <p>"Kari knows New Orleans like no one else. She guided us to the perfect historic home and made a complex purchase feel effortless."</p>
+        <div class="quote__by"><span class="quote__avatar">MR</span><span><span class="quote__name">Marie &amp; Robert D.</span><br><span class="quote__loc">Garden District</span></span></div>
+      </div>
+      <div class="quote">
+        <div class="quote__stars">★★★★★</div>
+        <p>"Truly white-glove service. Our home sold above asking in under two weeks. Kari's pricing and marketing were spot on."</p>
+        <div class="quote__by"><span class="quote__avatar">JT</span><span><span class="quote__name">James T.</span><br><span class="quote__loc">Uptown</span></span></div>
+      </div>
+      <div class="quote">
+        <div class="quote__stars">★★★★★</div>
+        <p>"As an out-of-state investor I relied entirely on Kari's judgment — and she delivered a fantastic rental property with real upside."</p>
+        <div class="quote__by"><span class="quote__avatar">AL</span><span><span class="quote__name">Alicia L.</span><br><span class="quote__loc">Marigny</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CTA ===== -->
+<section class="section">
+  <div class="container">
+    <div class="cta-band reveal">
+      <p class="eyebrow" style="justify-content:center;color:var(--brass-soft)">Let's Talk</p>
+      <h2>Ready to make your next move?</h2>
+      <p class="lead center" style="color:#c9d2d8">Whether you're buying, selling, or investing, a short conversation is the best place to start.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:26px">
+        <a href="tel:5044735969" class="btn btn--gold">📞 Call 504-473-5969</a>
+        <a href="contact.html" class="btn btn--outline">Send a Message</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img class="brand__logo brand__logo--footer" src="assets/logo.png" alt="New Orleans Property Services"></a>
+        <p>A boutique New Orleans brokerage delivering white-glove service to buyers, sellers, and investors since 2007.</p>
+        <div class="footer-social">
+          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></a>
+          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H8v3h3v6h3v-6h3l1-3h-4V9c0-.6.4-1 1-1Z"/></svg></a>
+          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 8A1.5 1.5 0 1 0 6.5 5a1.5 1.5 0 0 0 0 3ZM5 10h3v9H5zM10 10h3v1.3c.5-.8 1.6-1.5 3-1.5 2.3 0 3 1.5 3 3.8V19h-3v-4.6c0-1.1-.4-1.8-1.4-1.8-1 0-1.6.7-1.6 1.8V19h-3z"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul class="footer-links">
+          <li><a href="index.html">Home</a></li>
+          <li><a href="buyers.html">Buy a Home</a></li>
+          <li><a href="sellers.html">Sell a Home</a></li>
+          <li><a href="communities.html">Communities</a></li>
+          <li><a href="blog.html">Journal</a></li>
+          <li><a href="about.html">About Kari</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Services</h4>
+        <ul class="footer-links">
+          <li><a href="buyers.html">Buyer Representation</a></li>
+          <li><a href="sellers.html">Seller Representation</a></li>
+          <li><a href="buyers.html">Investment Property</a></li>
+          <li><a href="communities.html">Historic Homes</a></li>
+          <li><a href="sellers.html">Home Valuation</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul class="footer-links">
+          <li><a href="tel:5044735969">504-473-5969</a></li>
+          <li><a href="mailto:kari@neworleanspropertyservices.com">kari@neworleanspropertyservices.com</a></li>
+          <li>2801 St. Charles Ave, Unit 111B<br>New Orleans, LA 70115</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span data-year>2026</span> New Orleans Property Services, LLC. All rights reserved.</span>
+      <span>Licensed Real Estate Brokerage · Equal Housing Opportunity 🏠</span>
+    </div>
+  </div>
+</footer>
+
+<script src="js/main.js"></script>
+</body>
+</html>
