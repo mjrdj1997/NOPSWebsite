@@ -133,7 +133,7 @@
 <section class="section tone-cream">
   <div class="container">
     <div class="split">
-      <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/streetcar.jpg')); ?>"></div>
+      <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/foti-mansion.jpg')); ? alt="An elegant historic New Orleans mansion">"></div>
       <div class="reveal">
         <p class="eyebrow">In the Community</p>
         <h2>Rooted in the life of the city.</h2>
@@ -177,8 +177,8 @@
     </div>
     <div class="grid grid--4 reveal" style="margin-top:48px">
       <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/uptown-nops.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/french-quarter-nops.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/streetcar.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/fq-balcony.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
       <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/marigny-cottage.jpg')); ?>')"><span class="hood__label"><h3>Marigny / Bywater</h3><span>Creole cottages &amp; color</span></span></a>
     </div>
     <div class="center" style="margin-top:40px"><a href="/communities/" class="btn btn--ghost">Explore All Neighborhoods</a></div>
@@ -199,7 +199,7 @@
       <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/lakeview.jpg')); ?>')"></a>
       <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/midcity.jpg')); ?>')"></a>
       <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-01.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/fq-balcony.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/lanaux-mansion.jpg')); ?>')"></a>
     </div>
     <div class="center" style="margin-top:34px"><a href="#" class="btn btn--ghost">Follow @nolakari1</a></div>
   </div>
