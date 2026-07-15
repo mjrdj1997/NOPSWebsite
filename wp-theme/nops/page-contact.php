@@ -25,21 +25,28 @@
       <div class="card" style="padding:36px 34px">
         <h3 style="margin-bottom:6px">Send a message</h3>
         <p style="color:var(--muted);font-size:.95rem;margin-bottom:22px">Tell us a little about what you're looking for.</p>
-        <form data-demo>
+        <?php if (isset($_GET['sent'])) : ?>
+          <p class="form-note" style="color:#2f7d4f;font-weight:600;background:#eef7f0;border:1px solid #cde8d5;padding:14px 16px;border-radius:8px;margin-bottom:18px">Thank you — your message has been sent. Kari will get back to you personally.</p>
+        <?php elseif (isset($_GET['err'])) : ?>
+          <p class="form-note" style="color:#b3402f;font-weight:600;background:#fbeeec;border:1px solid #f0cfc9;padding:14px 16px;border-radius:8px;margin-bottom:18px">Sorry — something went wrong. Please call 504-473-5969 or email us directly.</p>
+        <?php endif; ?>
+        <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
+          <input type="hidden" name="action" value="nops_contact">
+          <?php wp_nonce_field('nops_contact', 'nops_nonce'); ?>
+          <div style="position:absolute;left:-9999px" aria-hidden="true"><label>Leave this blank<input type="text" name="nops_website" tabindex="-1" autocomplete="off"></label></div>
           <div class="form-row">
-            <div><label class="fl">First name</label><input type="text" required placeholder="Jane"></div>
-            <div><label class="fl">Last name</label><input type="text" required placeholder="Doe"></div>
+            <div><label class="fl">First name</label><input type="text" name="first_name" required placeholder="Jane"></div>
+            <div><label class="fl">Last name</label><input type="text" name="last_name" required placeholder="Doe"></div>
           </div>
           <div class="form-row">
-            <div><label class="fl">Email</label><input type="email" required placeholder="jane@email.com"></div>
-            <div><label class="fl">Phone</label><input type="tel" placeholder="(504) 000-0000"></div>
+            <div><label class="fl">Email</label><input type="email" name="email" required placeholder="jane@email.com"></div>
+            <div><label class="fl">Phone</label><input type="tel" name="phone" placeholder="(504) 000-0000"></div>
           </div>
           <div><label class="fl">I'm interested in</label>
-            <select><option>Buying a home</option><option>Selling a home</option><option>Investment property</option><option>A home valuation</option><option>Relocation to New Orleans</option><option>Just have a question</option></select>
+            <select name="interest"><option>Buying a home</option><option>Selling a home</option><option>Investment property</option><option>A home valuation</option><option>Relocation to New Orleans</option><option>Just have a question</option></select>
           </div>
-          <div><label class="fl">Message</label><textarea placeholder="Tell us what you have in mind..."></textarea></div>
+          <div><label class="fl">Message</label><textarea name="message" placeholder="Tell us what you have in mind..."></textarea></div>
           <button class="btn btn--gold" type="submit" style="justify-content:center">Send Message</button>
-          <p class="form-status form-note" role="status" aria-live="polite"></p>
         </form>
       </div>
     </div>

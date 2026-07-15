@@ -15,7 +15,7 @@
     <span>&#9993; <a href="mailto:kari@neworleanspropertyservices.com">kari@neworleanspropertyservices.com</a></span>
     <span>&#128205; 2801 St. Charles Ave, Unit 111B, New Orleans, LA 70115</span>
   </div>
-  <div class="topbar__social"><a href="#">Instagram</a><a href="#">Facebook</a><a href="#">LinkedIn</a></div>
+  <div class="topbar__social"><a href="https://www.instagram.com/nolakari1/" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com/search/top?q=New%20Orleans%20Property%20Services%20LLC" target="_blank" rel="noopener">Facebook</a><a href="https://www.linkedin.com/in/kari-ayala-2705446/" target="_blank" rel="noopener">LinkedIn</a></div>
 </div></div>
 
 <header class="site-header"><div class="container">

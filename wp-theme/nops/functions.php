@@ -84,3 +84,120 @@ class NOPS_Link_Walker extends Walker_Nav_Menu {
         $output .= sprintf('<a href="%s"%s>%s</a>', esc_url($item->url), $attr, esc_html($item->title));
     }
 }
+
+/* ------------------------------------------------------------------
+ * Contact form: store every submission (so nothing is lost even if
+ * email delivery isn't configured yet) and email the site owner.
+ * ------------------------------------------------------------------ */
+function nops_register_inquiry_cpt() {
+    register_post_type('nops_inquiry', [
+        'labels'    => ['name' => 'Inquiries', 'singular_name' => 'Inquiry'],
+        'public'    => false,
+        'show_ui'   => true,
+        'menu_icon' => 'dashicons-email-alt',
+        'supports'  => ['title', 'editor'],
+    ]);
+}
+add_action('init', 'nops_register_inquiry_cpt');
+
+function nops_handle_contact() {
+    // Honeypot: silently accept bots without doing anything.
+    if (!empty($_POST['nops_website'])) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
+    if (!isset($_POST['nops_nonce']) || !wp_verify_nonce($_POST['nops_nonce'], 'nops_contact')) {
+        wp_safe_redirect(home_url('/contact/?err=1')); exit;
+    }
+    $first    = sanitize_text_field($_POST['first_name'] ?? '');
+    $last     = sanitize_text_field($_POST['last_name'] ?? '');
+    $email    = sanitize_email($_POST['email'] ?? '');
+    $phone    = sanitize_text_field($_POST['phone'] ?? '');
+    $interest = sanitize_text_field($_POST['interest'] ?? '');
+    $message  = sanitize_textarea_field($_POST['message'] ?? '');
+    $name     = trim("$first $last");
+    if ($name === '' || !is_email($email)) { wp_safe_redirect(home_url('/contact/?err=1')); exit; }
+
+    $body = "New website inquiry\n\n"
+          . "Name: $name\nEmail: $email\nPhone: $phone\nInterested in: $interest\n\n"
+          . "Message:\n$message\n";
+
+    // Persist a copy in wp-admin -> Inquiries.
+    wp_insert_post([
+        'post_type'    => 'nops_inquiry',
+        'post_status'  => 'private',
+        'post_title'   => "$name — $interest",
+        'post_content' => $body,
+    ]);
+
+    // Email the owner (recipient filterable; defaults to the WP admin email).
+    $to      = apply_filters('nops_contact_recipient', get_option('admin_email'));
+    $headers = ['Content-Type: text/plain; charset=UTF-8'];
+    $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
+    wp_mail($to, "Website inquiry from $name", $body, $headers);
+
+    wp_safe_redirect(home_url('/contact/?sent=1'));
+    exit;
+}
+add_action('admin_post_nops_contact', 'nops_handle_contact');
+add_action('admin_post_nopriv_nops_contact', 'nops_handle_contact');
+
+/* ------------------------------------------------------------------
+ * SEO: per-page meta description, canonical, Open Graph, Twitter card.
+ * (WordPress core already outputs <title> via title-tag support.)
+ * ------------------------------------------------------------------ */
+function nops_meta_description() {
+    if (is_front_page()) {
+        return 'Boutique New Orleans real estate brokerage founded in 2007 by Kari Ayala. White-glove service for buyers, sellers & investors — historic homes and local expertise. Call 504-473-5969.';
+    }
+    if (is_page('buy'))         return 'Find and win the right New Orleans home with boutique, white-glove buyer representation from Kari Ayala. Search MLS listings and start your home search.';
+    if (is_page('sell'))        return 'Sell your New Orleans home for the most the market will bear — strategic pricing, standout marketing, and skilled negotiation from Kari Ayala.';
+    if (is_page('communities')) return 'Explore New Orleans neighborhoods — Garden District, Uptown, French Quarter, Marigny, Bywater, Lakeview, Mid-City and more — with local expert Kari Ayala.';
+    if (is_page('about'))       return 'Kari Kramer Ayala founded New Orleans Property Services in 2007. A Fulbright Scholar and lifelong New Orleanian delivering white-glove boutique real estate.';
+    if (is_page('contact'))     return 'Contact Kari Ayala at New Orleans Property Services. Call 504-473-5969 or send a message to start buying, selling, or investing in New Orleans real estate.';
+    if (is_home())              return 'Local real estate insight, neighborhood guides, and New Orleans market updates from boutique broker Kari Ayala.';
+    if (is_singular())          return wp_strip_all_tags(get_the_excerpt());
+    return get_bloginfo('description');
+}
+
+function nops_seo_meta() {
+    $desc  = trim(preg_replace('/\s+/', ' ', nops_meta_description()));
+    $title = wp_get_document_title();
+    $url   = home_url(add_query_arg([], $GLOBALS['wp']->request ?? ''));
+    $img   = get_theme_file_uri('assets/logo.jpg');
+    echo "\n<meta name=\"description\" content=\"" . esc_attr($desc) . "\">\n";
+    echo '<link rel="canonical" href="' . esc_url($url) . "\">\n";
+    echo '<meta property="og:type" content="website">' . "\n";
+    echo '<meta property="og:site_name" content="New Orleans Property Services">' . "\n";
+    echo '<meta property="og:title" content="' . esc_attr($title) . "\">\n";
+    echo '<meta property="og:description" content="' . esc_attr($desc) . "\">\n";
+    echo '<meta property="og:url" content="' . esc_url($url) . "\">\n";
+    echo '<meta property="og:image" content="' . esc_url($img) . "\">\n";
+    echo '<meta name="twitter:card" content="summary_large_image">' . "\n";
+}
+add_action('wp_head', 'nops_seo_meta', 1);
+
+function nops_local_schema() {
+    $data = [
+        '@context'   => 'https://schema.org',
+        '@type'      => 'RealEstateAgent',
+        'name'       => 'New Orleans Property Services',
+        'image'      => get_theme_file_uri('assets/logo.jpg'),
+        'url'        => home_url('/'),
+        'telephone'  => '+1-504-473-5969',
+        'priceRange' => '$$',
+        'areaServed' => 'New Orleans, LA',
+        'address'    => [
+            '@type'           => 'PostalAddress',
+            'streetAddress'   => '2801 St. Charles Ave, Unit 111B',
+            'addressLocality' => 'New Orleans',
+            'addressRegion'   => 'LA',
+            'postalCode'      => '70115',
+            'addressCountry'  => 'US',
+        ],
+        'founder'    => ['@type' => 'Person', 'name' => 'Kari Kramer Ayala'],
+        'sameAs'     => [
+            'https://www.instagram.com/nolakari1/',
+            'https://www.linkedin.com/in/kari-ayala-2705446/',
+        ],
+    ];
+    echo "\n<script type=\"application/ld+json\">" . wp_json_encode($data) . "</script>\n";
+}
+add_action('wp_head', 'nops_local_schema', 20);
