@@ -265,33 +265,24 @@
       <a href="/journal/" class="btn btn--ghost">Read the Journal →</a>
     </div>
     <div class="grid grid--3 reveal" style="margin-top:44px">
+      <?php
+      $nops_journal = new WP_Query(['post_type' => 'post', 'posts_per_page' => 3, 'ignore_sticky_posts' => true]);
+      if ($nops_journal->have_posts()) :
+        while ($nops_journal->have_posts()) : $nops_journal->the_post();
+          $thumb = get_the_post_thumbnail_url(get_the_ID(), 'large');
+          $cats  = get_the_category();
+          $mins  = max(1, (int) round(str_word_count(wp_strip_all_tags(get_the_content())) / 200));
+      ?>
       <article class="card post">
-        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=700&q=75')"></div>
+        <?php if ($thumb) : ?><div class="post__media" style="background-image:url('<?php echo esc_url($thumb); ?>')"></div><?php endif; ?>
         <div class="post__body">
-          <span class="post__cat">Buying Guide</span>
-          <a href="/journal/" class="post__title" style="display:block">Buying a Historic Home in New Orleans: Flood Zones, Elevation &amp; Insurance</a>
-          <p class="post__excerpt">What every buyer should understand about elevation certificates, flood zones, and insurance before falling for that gorgeous shotgun.</p>
-          <div class="post__meta"><span>Jun 28, 2026</span><span class="post__read">5 min read</span></div>
+          <?php if ($cats) : ?><span class="post__cat"><?php echo esc_html($cats[0]->name); ?></span><?php endif; ?>
+          <a href="<?php the_permalink(); ?>" class="post__title" style="display:block"><?php the_title(); ?></a>
+          <p class="post__excerpt"><?php echo esc_html(wp_trim_words(get_the_excerpt(), 22)); ?></p>
+          <div class="post__meta"><span><?php echo esc_html(get_the_date('M j, Y')); ?></span><span class="post__read"><?php echo (int) $mins; ?> min read</span></div>
         </div>
       </article>
-      <article class="card post">
-        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=700&q=75')"></div>
-        <div class="post__body">
-          <span class="post__cat">Neighborhoods</span>
-          <a href="/journal/" class="post__title" style="display:block">Garden District vs. Marigny: Which Neighborhood Fits You?</a>
-          <p class="post__excerpt">Two beloved but very different corners of the city — here's how to think about lifestyle, value, and vibe.</p>
-          <div class="post__meta"><span>Jun 12, 2026</span><span class="post__read">4 min read</span></div>
-        </div>
-      </article>
-      <article class="card post">
-        <div class="post__media" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=700&q=75')"></div>
-        <div class="post__body">
-          <span class="post__cat">Market Update</span>
-          <a href="/journal/" class="post__title" style="display:block">New Orleans Market Update: Summer 2026</a>
-          <p class="post__excerpt">Where prices, inventory, and buyer demand stand across the city as we move through the season.</p>
-          <div class="post__meta"><span>Jun 1, 2026</span><span class="post__read">3 min read</span></div>
-        </div>
-      </article>
+      <?php endwhile; wp_reset_postdata(); endif; ?>
     </div>
   </div>
 </section>

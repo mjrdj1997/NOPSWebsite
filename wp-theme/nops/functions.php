@@ -201,3 +201,25 @@ function nops_local_schema() {
     echo "\n<script type=\"application/ld+json\">" . wp_json_encode($data) . "</script>\n";
 }
 add_action('wp_head', 'nops_local_schema', 20);
+
+/* ------------------------------------------------------------------
+ * Google Analytics 4. Outputs the gtag snippet only when a valid
+ * Measurement ID is stored in the `nops_ga4_id` option, and never
+ * for logged-in editors/admins (keeps their visits out of the data).
+ * Enable with:  wp option update nops_ga4_id G-XXXXXXXXXX
+ * ------------------------------------------------------------------ */
+function nops_analytics() {
+    $id = get_option('nops_ga4_id', '');
+    if (!$id || !preg_match('/^G-[A-Z0-9]+$/', $id)) return;
+    if (is_user_logged_in() && current_user_can('edit_posts')) return;
+    ?>
+<script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($id); ?>"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', '<?php echo esc_js($id); ?>');
+</script>
+<?php
+}
+add_action('wp_head', 'nops_analytics', 5);
