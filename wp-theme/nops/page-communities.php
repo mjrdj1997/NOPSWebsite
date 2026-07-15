@@ -10,12 +10,12 @@
 <section class="section"><div class="container">
   <div class="grid grid--4 reveal">
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
-    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/streetcar.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
-    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/fq-balcony.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
+    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/uptown-nops.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
+    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/french-quarter-nops.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/marigny-cottage.jpg')); ?>')"><span class="hood__label"><h3>Marigny</h3><span>Creole cottages &amp; music</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/bywater-cottage.jpg')); ?>')"><span class="hood__label"><h3>Bywater</h3><span>Color, art &amp; the river</span></span></a>
-    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/lakeview.jpg')); ?>')"><span class="hood__label"><h3>Lakeview</h3><span>Family homes &amp; the lake</span></span></a>
-    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/midcity.jpg')); ?>')"><span class="hood__label"><h3>Mid-City</h3><span>Bayou St. John &amp; parks</span></span></a>
+    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/lakeview-nops.jpg')); ?>')"><span class="hood__label"><h3>Lakeview</h3><span>Family homes &amp; the lake</span></span></a>
+    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/midcity-nops.jpg')); ?>')"><span class="hood__label"><h3>Mid-City</h3><span>Bayou St. John &amp; parks</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-01.jpg')); ?>')"><span class="hood__label"><h3>Irish Channel</h3><span>Shotguns &amp; walkability</span></span></a>
   </div>
 </div></section>
@@ -29,7 +29,7 @@
       <p>Not sure where to start? That's exactly the conversation to have. Tell us how you want to live, and we'll point you toward the neighborhoods worth exploring.</p>
       <div style="margin-top:26px"><a href="/contact/" class="btn btn--dark">Ask About a Neighborhood →</a></div>
     </div>
-    <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-04.jpg')); ?>"></div>
+    <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/streetcar.jpg')); ?>"></div>
   </div>
 </div></section>
 
