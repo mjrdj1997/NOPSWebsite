@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="hero__media reveal">
-      <img src="<?php echo esc_url(get_theme_file_uri('assets/nola/gd-mansion.jpg')); ?>">
+      <img src="<?php echo esc_url(get_theme_file_uri('assets/nola/gd-mansion.jpg')); ?>">
       <div class="hero__media-badge"><span class="fleur">⚜</span><span><b>Est. 2007</b><span>Boutique &amp; locally owned</span></span></div>
     </div>
   </div>
@@ -133,7 +133,7 @@
 <section class="section tone-cream">
   <div class="container">
     <div class="split">
-      <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/foti-mansion.jpg')); ? alt="An elegant historic New Orleans mansion">"></div>
+      <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/foti-mansion.jpg')); ?>" alt="An elegant historic New Orleans mansion"></div>
       <div class="reveal">
         <p class="eyebrow">In the Community</p>
         <h2>Rooted in the life of the city.</h2>
