@@ -34,7 +34,7 @@
   </div>
   <div class="footer-bottom">
     <span>&copy; <?php echo esc_html(date('Y')); ?> New Orleans Property Services, LLC. All rights reserved.</span>
-    <span>Licensed Real Estate Brokerage &middot; Equal Housing Opportunity &#127968;</span>
+    <span>Licensed Real Estate Brokerage &middot; Equal Housing Opportunity &#127968; &middot; <a href="<?php echo esc_url(home_url('/credits/')); ?>">Photo Credits</a></span>
   </div>
 </div></footer>
 

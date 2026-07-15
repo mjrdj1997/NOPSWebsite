@@ -1,0 +1,98 @@
+[
+ {
+  "name": "gd-mansion",
+  "desc": "Garden District mansion, Coliseum St",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Coliseum_Street%2C_Garden_District%2C_New_Orleans%2C_April_2023_-_Mansion.jpg"
+ },
+ {
+  "name": "hoffman-mansion",
+  "desc": "Hoffman Mansion, Garden District",
+  "author": "Infrogmation",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Hoffman_Mansion%2C_Prytania_%26_Harmony%2C_Garden_District_New_Orleans_December_2024_-_05.jpg"
+ },
+ {
+  "name": "gd-2008",
+  "desc": "Garden District mansion",
+  "author": "Dan Lang",
+  "lic": "CC BY-SA 2.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_March_2008_-_Garden_District_Mansion.jpg"
+ },
+ {
+  "name": "fq-balcony",
+  "desc": "French Quarter cast-iron gallery",
+  "author": "David Ohmer",
+  "lic": "CC BY 2.0",
+  "licurl": "https://creativecommons.org/licenses/by/2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_-_French_Quarter_%22Cast-Iron_Balcony%22_October_2019.jpg"
+ },
+ {
+  "name": "marigny-cottage",
+  "desc": "Creole cottage, Faubourg Marigny",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:New_Marigny_New_Orleans_29th_May_2019_Creole_cottage_at_Marais_%26_Spain_Streets.jpg"
+ },
+ {
+  "name": "bywater-cottage",
+  "desc": "Creole cottage, Bywater",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_in_August_Upper_Bywater_Creole_Cottage.jpg"
+ },
+ {
+  "name": "streetcar",
+  "desc": "St. Charles Ave streetcar, Uptown",
+  "author": "Infrogmation",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Streetcar_on_Saint_Charles_Avenue%2C_Uptown_New_Orleans%2C_12_March_2024_-_10.jpg"
+ },
+ {
+  "name": "lakeview",
+  "desc": "Lakeview home",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Lakeview_New_Orleans_House_Sept_2017_01.jpg"
+ },
+ {
+  "name": "midcity",
+  "desc": "Mid-City home, Orleans Ave",
+  "author": "Infrogmation",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Orleans_Avenue%2C_Mid-City_New_Orleans_Nov_2024_-_House_with_flag.jpg"
+ },
+ {
+  "name": "shotgun-01",
+  "desc": "Shotgun house, Irish Channel",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY 2.0",
+  "licurl": "https://creativecommons.org/licenses/by/2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Shotgun_House%2C_Irish_Channel%2C_New_Orleans_01.jpg"
+ },
+ {
+  "name": "shotgun-04",
+  "desc": "Shotgun house, Irish Channel",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY 2.0",
+  "licurl": "https://creativecommons.org/licenses/by/2.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Shotgun_House%2C_Irish_Channel%2C_New_Orleans_04.jpg"
+ },
+ {
+  "name": "creole-7thward",
+  "desc": "Creole cottage, 7th Ward",
+  "author": "Infrogmation of New Orleans",
+  "lic": "CC BY-SA 4.0",
+  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
+  "page": "https://commons.wikimedia.org/wiki/File:Creole_Cottage%2C_St_Anthony_Street%2C_7th_Ward_of_New_Orleans%2C_May_2022.jpg"
+ }
+]

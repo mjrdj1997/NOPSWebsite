@@ -22,7 +22,7 @@
       <div style="margin-top:28px"><a href="/contact/" class="btn btn--gold">Request My Valuation →</a></div>
     </div>
     <div class="split__media reveal">
-      <img src="https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=800&q=80" alt="Elegant New Orleans home interior">
+      <img src="<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>">
       <div class="split__badge"><div class="num">Days</div><div class="lbl">Homes priced right sell faster and closer to ask</div></div>
     </div>
   </div>

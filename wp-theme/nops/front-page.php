@@ -19,7 +19,7 @@
       </div>
     </div>
     <div class="hero__media reveal">
-      <img src="https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=1000&q=80" alt="A classic New Orleans home">
+      <img src="<?php echo esc_url(get_theme_file_uri('assets/nola/gd-mansion.jpg')); ?>">
       <div class="hero__media-badge"><span class="fleur">⚜</span><span><b>Est. 2007</b><span>Boutique &amp; locally owned</span></span></div>
     </div>
   </div>
@@ -44,58 +44,6 @@
   </form>
 </div>
 
-<!-- ===== Featured listings (IDX placeholder) ===== -->
-<section class="section">
-  <div class="container">
-    <div class="center reveal">
-      <p class="eyebrow">Featured Listings</p>
-      <h2>Handpicked homes across the city</h2>
-      <p class="lead center">A preview of the live listings grid. On the WordPress site this section connects to the GSREIN MLS via IDX, refreshing automatically with real inventory.</p>
-    </div>
-
-    <div class="grid grid--3 reveal" style="margin-top:48px">
-      <article class="card">
-        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80')">
-          <span class="property__tag">For Sale</span><span class="property__price">$685,000</span>
-        </div>
-        <div class="property__body">
-          <span class="property__hood">Garden District</span>
-          <h3 class="property__addr">1420 Prytania Street</h3>
-          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Restored Greek Revival with original millwork and a wrought-iron gallery.</p>
-          <div class="property__meta"><span><b>3</b> Beds</span><span><b>2.5</b> Baths</span><span><b>2,340</b> Sq Ft</span></div>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80')">
-          <span class="property__tag">New</span><span class="property__price">$429,000</span>
-        </div>
-        <div class="property__body">
-          <span class="property__hood">Marigny</span>
-          <h3 class="property__addr">738 Marigny Street</h3>
-          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Classic Creole cottage steps from Frenchmen Street, freshly renovated.</p>
-          <div class="property__meta"><span><b>2</b> Beds</span><span><b>2</b> Baths</span><span><b>1,510</b> Sq Ft</span></div>
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="property__media" style="background-image:linear-gradient(135deg,rgba(26,24,22,.15),rgba(26,24,22,.35)),url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=800&q=80')">
-          <span class="property__tag">Investor</span><span class="property__price">$975,000</span>
-        </div>
-        <div class="property__body">
-          <span class="property__hood">Uptown</span>
-          <h3 class="property__addr">5019 Magazine Street</h3>
-          <p style="color:var(--muted);margin:6px 0 0;font-size:.92rem">Turn-key duplex with strong rental history near the shopping corridor.</p>
-          <div class="property__meta"><span><b>4</b> Beds</span><span><b>4</b> Baths</span><span><b>3,120</b> Sq Ft</span></div>
-        </div>
-      </article>
-    </div>
-
-    <div class="center" style="margin-top:44px">
-      <a href="/buy/" class="btn btn--ghost">View All Listings</a>
-    </div>
-  </div>
-</section>
 
 <!-- ===== Services ===== -->
 <section class="section tone-cream">
@@ -185,7 +133,7 @@
 <section class="section tone-cream">
   <div class="container">
     <div class="split">
-      <div class="split__media reveal"><img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80" alt="New Orleans street life"></div>
+      <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-04.jpg')); ?>"></div>
       <div class="reveal">
         <p class="eyebrow">In the Community</p>
         <h2>Rooted in the life of the city.</h2>
@@ -228,10 +176,10 @@
       <h2>Neighborhoods we call home</h2>
     </div>
     <div class="grid grid--4 reveal" style="margin-top:48px">
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
-      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=600&q=80')"><span class="hood__label"><h3>Marigny / Bywater</h3><span>Creole cottages &amp; color</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/streetcar.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/fq-balcony.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
+      <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/marigny-cottage.jpg')); ?>')"><span class="hood__label"><h3>Marigny / Bywater</h3><span>Creole cottages &amp; color</span></span></a>
     </div>
     <div class="center" style="margin-top:40px"><a href="/communities/" class="btn btn--ghost">Explore All Neighborhoods</a></div>
   </div>
@@ -246,12 +194,12 @@
       <p class="lead center">New listings, sold celebrations, and a local's view of New Orleans — pulled straight from Instagram so the site stays current.</p>
     </div>
     <div class="ig-grid reveal" style="margin-top:40px">
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=400&q=70')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=400&q=70')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=400&q=70')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=400&q=70')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1449844908441-8829872d2607?auto=format&fit=crop&w=400&q=70')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=400&q=70')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/hoffman-mansion.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/bywater-cottage.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/lakeview.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/midcity.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-01.jpg')); ?>')"></a>
+      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/creole-7thward.jpg')); ?>')"></a>
     </div>
     <div class="center" style="margin-top:34px"><a href="#" class="btn btn--ghost">Follow @nolakari1</a></div>
   </div>
