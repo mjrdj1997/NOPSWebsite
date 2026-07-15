@@ -329,7 +329,8 @@ textarea{resize:vertical;min-height:130px}
   .site-header{background:var(--paper);backdrop-filter:none;-webkit-backdrop-filter:none}
   .nav{position:fixed;inset:0 0 0 auto;height:100vh;height:100dvh;width:min(82vw,320px);background:var(--paper);border-left:1px solid var(--line);flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:88px 32px 32px;gap:20px;overflow-y:auto;transform:translateX(100%);transition:.3s;box-shadow:var(--shadow);z-index:60}
   .nav a{font-size:1.05rem}
-  .nav.open{transform:none}
+  /* box-shadow with huge spread = full-screen dim behind the drawer, no extra markup */
+  .nav.open{transform:none;box-shadow:0 0 0 100vmax rgba(26,24,22,.5)}
   .nav-toggle{display:flex;z-index:70}
   .nav-toggle.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
   .nav-toggle.open span:nth-child(2){opacity:0}
