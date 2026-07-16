@@ -29,7 +29,7 @@
       <p>Not sure where to start? That's exactly the conversation to have. Tell us how you want to live, and we'll point you toward the neighborhoods worth exploring.</p>
       <div style="margin-top:26px"><a href="/contact/" class="btn btn--dark">Ask About a Neighborhood →</a></div>
     </div>
-    <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/foti-mansion.jpg')); ?>" alt="An elegant historic New Orleans mansion"></div>
+    <div class="split__media reveal"><img src="<?php echo esc_url(get_theme_file_uri('assets/nola/bordeaux-porch.jpg')); ?>" alt="A restored Victorian New Orleans home"></div>
   </div>
 </div></section>
 
