@@ -135,6 +135,15 @@ function nops_handle_contact() {
     $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
     wp_mail($to, "Website inquiry from $name", $body, $headers);
 
+    // Auto-reply / confirmation to the person who filled out the form.
+    $greet = $first !== '' ? $first : 'there';
+    $ack_body = "Hi $greet,\n\n"
+        . "Thank you for reaching out to New Orleans Property Services. I've received your message and will get back to you personally — usually within one business day.\n\n"
+        . "If it's time-sensitive, feel free to call or text me directly at 504-473-5969.\n\n"
+        . "Warmly,\n\nKari Ayala\nBroker / Owner, New Orleans Property Services, LLC\n504-473-5969\nneworleanspropertyservices.com";
+    $ack_headers = ['Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $to];
+    wp_mail($email, 'Thanks for reaching out — New Orleans Property Services', $ack_body, $ack_headers);
+
     wp_safe_redirect(home_url('/contact/?sent=1'));
     exit;
 }
