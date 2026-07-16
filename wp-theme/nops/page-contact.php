@@ -26,9 +26,22 @@
         <h3 style="margin-bottom:6px">Send a message</h3>
         <p style="color:var(--muted);font-size:.95rem;margin-bottom:22px">Tell us a little about what you're looking for.</p>
         <?php if (isset($_GET['sent'])) : ?>
-          <p class="form-note" style="color:#2f7d4f;font-weight:600;background:#eef7f0;border:1px solid #cde8d5;padding:14px 16px;border-radius:8px;margin-bottom:18px">Thank you — your message has been sent. Kari will get back to you personally.</p>
+          <p id="form-note" class="form-note" role="status" tabindex="-1" style="scroll-margin-top:110px;color:#2f7d4f;font-weight:600;background:#eef7f0;border:1px solid #cde8d5;padding:14px 16px;border-radius:8px;margin-bottom:18px">Thank you — your message has been sent. Kari will get back to you personally.</p>
         <?php elseif (isset($_GET['err'])) : ?>
-          <p class="form-note" style="color:#b3402f;font-weight:600;background:#fbeeec;border:1px solid #f0cfc9;padding:14px 16px;border-radius:8px;margin-bottom:18px">Sorry — something went wrong. Please call 504-473-5969 or email us directly.</p>
+          <p id="form-note" class="form-note" role="status" tabindex="-1" style="scroll-margin-top:110px;color:#b3402f;font-weight:600;background:#fbeeec;border:1px solid #f0cfc9;padding:14px 16px;border-radius:8px;margin-bottom:18px">Sorry — something went wrong. Please call 504-473-5969 or email us directly.</p>
+        <?php endif; ?>
+        <?php if (isset($_GET['sent']) || isset($_GET['err'])) : ?>
+        <script>
+        (function(){
+          var n = document.getElementById('form-note');
+          if (!n) return;
+          var go = function(){ setTimeout(function(){
+            n.scrollIntoView({behavior:'smooth', block:'center'});
+            try { n.focus({preventScroll:true}); } catch(e){}
+          }, 80); };
+          if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
+        })();
+        </script>
         <?php endif; ?>
         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
           <input type="hidden" name="action" value="nops_contact">
