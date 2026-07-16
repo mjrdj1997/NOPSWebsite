@@ -27,7 +27,7 @@
 
 <!-- ===== Search bar (maps to IDX search) ===== -->
 <div class="container">
-  <form class="searchbar" data-demo>
+  <form class="searchbar" method="get" action="<?php echo esc_url(home_url('/listing-search/')); ?>">
     <div class="field">
       <label>Neighborhood</label>
       <select><option>Any area</option><option>Garden District</option><option>Uptown</option><option>French Quarter</option><option>Marigny / Bywater</option><option>Lakeview</option><option>Mid-City</option></select>
@@ -43,6 +43,21 @@
     <button class="btn btn--gold" type="submit">Search MLS</button>
   </form>
 </div>
+
+
+<!-- ===== Featured Listings (IDX) ===== -->
+<section class="section" id="featured-listings">
+  <div class="container">
+    <div class="center reveal">
+      <p class="eyebrow">Now on the Market</p>
+      <h2>Featured New Orleans listings</h2>
+      <p class="lead center">A selection of current listings, pulled live from the MLS. <a href="<?php echo esc_url(home_url('/listing-search/')); ?>">Search every home for sale &rarr;</a></p>
+    </div>
+    <div class="reveal" style="margin-top:40px">
+      <?php echo do_shortcode('[mbb_widget data-type="FeaturedGallery"]'); ?>
+    </div>
+  </div>
+</section>
 
 
 <!-- ===== Services ===== -->

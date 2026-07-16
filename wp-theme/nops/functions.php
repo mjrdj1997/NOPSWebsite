@@ -54,12 +54,13 @@ function nops_primary_nav() {
 
 function nops_fallback_nav() {
     $items = [
-        '/'             => 'Home',
-        '/buy/'         => 'Buy',
-        '/sell/'        => 'Sell',
-        '/communities/' => 'Communities',
-        '/journal/'     => 'Journal',
-        '/about/'       => 'About',
+        '/'                => 'Home',
+        '/listing-search/' => 'Search',
+        '/buy/'            => 'Buy',
+        '/sell/'           => 'Sell',
+        '/communities/'    => 'Communities',
+        '/journal/'        => 'Journal',
+        '/about/'          => 'About',
     ];
     $current = untrailingslashit(home_url(add_query_arg([], $GLOBALS['wp']->request ?? '')));
     foreach ($items as $path => $label) {
