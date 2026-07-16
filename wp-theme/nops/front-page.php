@@ -70,15 +70,15 @@
     </div>
     <div class="reveal" style="margin-top:30px">
       <form id="conc-form" class="conc-form" autocomplete="off">
-        <label for="conc-q" class="fl" style="display:block;margin-bottom:8px">Describe your ideal home</label>
-        <textarea id="conc-q" rows="3" maxlength="600" required placeholder="e.g. A 3-bedroom historic home in the Marigny or Bywater under $600k, with a courtyard and off-street parking, walkable to coffee."></textarea>
-        <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" id="conc-hp" tabindex="-1" autocomplete="off"></div>
-        <div class="conc-controls">
-          <button type="button" id="conc-mic" class="btn btn--ghost conc-mic" hidden aria-pressed="false" title="Speak your search">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="vertical-align:-4px;margin-right:7px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v3"/></svg><span class="conc-mic-txt">Speak your search</span>
+        <label for="conc-q" class="fl" style="display:block;margin-bottom:8px">Describe your ideal home <span style="color:var(--muted,#6b6560);font-weight:400">— or tap the mic to speak</span></label>
+        <div class="conc-input">
+          <textarea id="conc-q" rows="3" maxlength="600" required placeholder="e.g. A 3-bedroom historic home in the Marigny or Bywater under $600k, with a courtyard and off-street parking, walkable to coffee."></textarea>
+          <button type="button" id="conc-mic" class="conc-mic" hidden aria-pressed="false" aria-label="Speak your search" title="Speak your search">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v3"/></svg>
           </button>
-          <button type="submit" id="conc-go" class="btn btn--gold" style="justify-content:center">Find my matches</button>
         </div>
+        <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" id="conc-hp" tabindex="-1" autocomplete="off"></div>
+        <button type="submit" id="conc-go" class="btn btn--gold" style="justify-content:center;margin-top:14px">Find my matches</button>
       </form>
       <div id="conc-result" class="conc-result" aria-live="polite" hidden></div>
       <p class="conc-fineprint">Kari's AI concierge helps with home criteria only — location, price, size, style, and features. In keeping with Fair Housing law, it doesn't advise on neighborhoods by demographics, schools, or safety; for that guidance, <a href="/contact/">talk with Kari directly</a>.</p>
@@ -86,7 +86,7 @@
   </div>
 </section>
 <style>
-#ai-concierge .conc-form textarea{width:100%;padding:14px 16px;border:1px solid var(--line,#e8e1d4);border-radius:10px;font:inherit;font-size:1rem;background:#fff;color:var(--ink,#1a1816);resize:vertical;box-sizing:border-box}
+#ai-concierge .conc-form textarea{width:100%;padding:14px 16px;border:1px solid var(--line,#e8e1d4);border-radius:10px;font:inherit;font-size:1rem;background:#fff;color:var(--ink,#1a1816);resize:none;box-sizing:border-box}
 #ai-concierge .conc-form textarea:focus{outline:none;border-color:var(--brass,#cd8c38);box-shadow:0 0 0 3px rgba(205,140,56,.15)}
 #ai-concierge .conc-result{margin-top:24px;background:#fff;border:1px solid var(--line,#e8e1d4);border-radius:12px;padding:24px 26px;scroll-margin-top:110px}
 #ai-concierge .conc-result h3{margin:0 0 10px;font-family:Georgia,serif;font-size:1.2rem;color:var(--ink,#1a1816)}
@@ -100,11 +100,12 @@
 #ai-concierge .conc-fineprint{color:var(--muted,#6b6560);font-size:.78rem;line-height:1.5;text-align:center;margin-top:16px}
 #ai-concierge .conc-spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:concspin .7s linear infinite;vertical-align:-2px;margin-right:8px}
 @keyframes concspin{to{transform:rotate(360deg)}}
-#ai-concierge .conc-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px}
-#ai-concierge .conc-mic{display:inline-flex;align-items:center}
-#ai-concierge .conc-mic.listening{background:#c0392b;border-color:#c0392b;color:#fff}
-#ai-concierge .conc-mic.listening svg{animation:concpulse 1s ease-in-out infinite}
-@keyframes concpulse{0%,100%{opacity:1}50%{opacity:.3}}
+#ai-concierge .conc-input{position:relative}
+#ai-concierge .conc-input textarea{padding-right:62px}
+#ai-concierge .conc-mic{position:absolute;right:12px;bottom:12px;width:44px;height:44px;padding:0;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--brass,#cd8c38);background:#fff;color:var(--brass,#cd8c38);cursor:pointer;transition:background .15s,color .15s}
+#ai-concierge .conc-mic:hover{background:var(--brass,#cd8c38);color:#fff}
+#ai-concierge .conc-mic.listening{background:#c0392b;border-color:#c0392b;color:#fff;animation:concpulsebtn 1.25s ease-in-out infinite}
+@keyframes concpulsebtn{0%{box-shadow:0 0 0 0 rgba(192,57,43,.45)}70%,100%{box-shadow:0 0 0 10px rgba(192,57,43,0)}}
 </style>
 <script>
 (function(){
@@ -128,7 +129,7 @@
     mic.hidden = false;
     var rec = new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=false; rec.maxAlternatives=1;
     var listening=false, baseText='', micTxt=mic.querySelector('.conc-mic-txt');
-    function setListening(on){ listening=on; mic.classList.toggle('listening',on); mic.setAttribute('aria-pressed',on?'true':'false'); if(micTxt) micTxt.textContent = on?'Listening… tap to stop':'Speak your search'; }
+    function setListening(on){ listening=on; mic.classList.toggle('listening',on); mic.setAttribute('aria-pressed',on?'true':'false'); mic.title = on?'Listening… tap to stop':'Speak your search'; if(micTxt) micTxt.textContent = on?'Listening… tap to stop':'Speak your search'; }
     mic.addEventListener('click',function(){ if(listening){ rec.stop(); return; } baseText = q.value ? q.value.replace(/\s+$/,'')+' ' : ''; try{ rec.start(); }catch(e){} });
     rec.onstart=function(){ setListening(true); q.focus(); };
     rec.onend=function(){ setListening(false); };
