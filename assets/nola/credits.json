@@ -24,14 +24,6 @@
   "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_March_2008_-_Garden_District_Mansion.jpg"
  },
  {
-  "name": "fq-balcony",
-  "desc": "French Quarter cast-iron gallery",
-  "author": "David Ohmer",
-  "lic": "CC BY 2.0",
-  "licurl": "https://creativecommons.org/licenses/by/2.0",
-  "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_-_French_Quarter_%22Cast-Iron_Balcony%22_October_2019.jpg"
- },
- {
   "name": "marigny-cottage",
   "desc": "Creole cottage, Faubourg Marigny",
   "author": "Infrogmation of New Orleans",
@@ -46,14 +38,6 @@
   "lic": "CC BY-SA 4.0",
   "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
   "page": "https://commons.wikimedia.org/wiki/File:New_Orleans_in_August_Upper_Bywater_Creole_Cottage.jpg"
- },
- {
-  "name": "streetcar",
-  "desc": "St. Charles Ave streetcar, Uptown",
-  "author": "Infrogmation",
-  "lic": "CC BY-SA 4.0",
-  "licurl": "https://creativecommons.org/licenses/by-sa/4.0",
-  "page": "https://commons.wikimedia.org/wiki/File:Streetcar_on_Saint_Charles_Avenue%2C_Uptown_New_Orleans%2C_12_March_2024_-_10.jpg"
  },
  {
   "name": "lakeview",
