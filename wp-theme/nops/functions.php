@@ -135,14 +135,41 @@ function nops_handle_contact() {
     $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
     wp_mail($to, "Website inquiry from $name", $body, $headers);
 
-    // Auto-reply / confirmation to the person who filled out the form.
-    $greet = $first !== '' ? $first : 'there';
-    $ack_body = "Hi $greet,\n\n"
-        . "Thank you for reaching out to New Orleans Property Services. I've received your message and will get back to you personally — usually within one business day.\n\n"
-        . "If it's time-sensitive, feel free to call or text me directly at 504-473-5969.\n\n"
-        . "Warmly,\n\nKari Ayala\nBroker / Owner, New Orleans Property Services, LLC\n504-473-5969\nneworleanspropertyservices.com";
-    $ack_headers = ['Content-Type: text/plain; charset=UTF-8', 'Reply-To: ' . $to];
-    wp_mail($email, 'Thanks for reaching out — New Orleans Property Services', $ack_body, $ack_headers);
+    // Branded HTML auto-reply / confirmation to the submitter.
+    $greet = $first !== '' ? esc_html($first) : 'there';
+    $logo  = esc_url(get_theme_file_uri('assets/logo.png'));
+    $site  = esc_url(home_url('/'));
+    $ack_html = <<<HTML
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:24px 0;margin:0;font-family:Arial,Helvetica,sans-serif">
+  <tr><td align="center">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e8e1d4">
+      <tr><td align="center" style="background:#1a1816;padding:26px 24px">
+        <img src="{$logo}" alt="New Orleans Property Services" width="150" style="display:block;height:auto;border:0;max-width:150px">
+      </td></tr>
+      <tr><td style="padding:34px 40px 6px">
+        <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;color:#1a1816;font-weight:normal">Thank you, {$greet}.</h1>
+        <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#403c38">I've received your message and will get back to you <strong>personally</strong> &mdash; usually within one business day.</p>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.6;color:#403c38">If it's time-sensitive, feel free to call or text me directly at <a href="tel:5044735969" style="color:#cd8c38;text-decoration:none;font-weight:bold">504-473-5969</a>.</p>
+        <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#cd8c38;border-radius:40px">
+          <a href="tel:5044735969" style="display:inline-block;padding:13px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold">Call 504-473-5969</a>
+        </td></tr></table>
+      </td></tr>
+      <tr><td style="padding:26px 40px 34px">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #e8e1d4;padding-top:22px">
+          <p style="margin:0;font-family:Georgia,serif;font-size:18px;color:#1a1816">Kari Ayala</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#6b6560;text-transform:uppercase;letter-spacing:1.5px">Broker &amp; Owner &middot; New Orleans Property Services</p>
+          <p style="margin:14px 0 0;font-size:14px;color:#403c38"><a href="tel:5044735969" style="color:#403c38;text-decoration:none">504-473-5969</a> &nbsp;&middot;&nbsp; <a href="{$site}" style="color:#cd8c38;text-decoration:none">neworleanspropertyservices.com</a></p>
+        </td></tr></table>
+      </td></tr>
+      <tr><td align="center" style="background:#1a1816;padding:16px 24px">
+        <p style="margin:0;font-size:11px;color:#a49c92;line-height:1.6">2801 St. Charles Ave, Unit 111B, New Orleans, LA 70115<br>Licensed Real Estate Brokerage &middot; Equal Housing Opportunity</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+HTML;
+    $ack_headers = ['Content-Type: text/html; charset=UTF-8', 'Reply-To: ' . $to];
+    wp_mail($email, 'Thanks for reaching out — New Orleans Property Services', $ack_html, $ack_headers);
 
     wp_safe_redirect(home_url('/contact/?sent=1'));
     exit;
