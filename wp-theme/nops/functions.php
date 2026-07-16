@@ -143,8 +143,10 @@ function nops_handle_contact() {
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:24px 0;margin:0;font-family:Arial,Helvetica,sans-serif">
   <tr><td align="center">
     <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e8e1d4">
-      <tr><td align="center" style="background:#1a1816;padding:26px 24px">
-        <img src="{$logo}" alt="New Orleans Property Services" width="150" style="display:block;height:auto;border:0;max-width:150px">
+      <tr><td align="center" style="background:#1a1816;padding:28px 24px">
+        <div style="font-size:26px;color:#cd8c38;line-height:1;margin-bottom:6px">&#9884;</div>
+        <div style="font-family:Georgia,'Times New Roman',serif;font-size:22px;color:#ffffff;letter-spacing:.5px">New Orleans <span style="color:#cd8c38">Property Services</span></div>
+        <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#a49c92;letter-spacing:2.5px;text-transform:uppercase;margin-top:7px">Boutique Real Estate &middot; Est. 2007</div>
       </td></tr>
       <tr><td style="padding:34px 40px 6px">
         <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;color:#1a1816;font-weight:normal">Thank you, {$greet}.</h1>
