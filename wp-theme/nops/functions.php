@@ -26,8 +26,10 @@ function nops_assets() {
         [],
         null
     );
-    wp_enqueue_style('nops-main', get_theme_file_uri('assets/main.css'), [], $ver);
-    wp_enqueue_script('nops-main', get_theme_file_uri('assets/main.js'), [], $ver, true);
+    $cssv = filemtime(get_theme_file_path('assets/main.css'));
+    $jsv  = filemtime(get_theme_file_path('assets/main.js'));
+    wp_enqueue_style('nops-main', get_theme_file_uri('assets/main.css'), [], $cssv);
+    wp_enqueue_script('nops-main', get_theme_file_uri('assets/main.js'), [], $jsv, true);
 }
 add_action('wp_enqueue_scripts', 'nops_assets');
 
