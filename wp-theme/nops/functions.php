@@ -137,8 +137,11 @@ function nops_handle_contact() {
 
     // Branded HTML auto-reply / confirmation to the submitter.
     $greet = $first !== '' ? esc_html($first) : 'there';
-    $logo  = esc_url(get_theme_file_uri('assets/logo.png'));
-    $site  = esc_url(home_url('/'));
+    // Hard-code the real domain (over HTTPS) so the link text and destination match a
+    // legitimate domain. Deriving this from home_url() yields the bare server IP until DNS
+    // cutover, and a friendly-text-hiding-a-raw-IP link is a textbook phishing signal that
+    // gets the whole message quarantined/deferred by spam filters (esp. Microsoft 365).
+    $site  = 'https://neworleanspropertyservices.com/';
     $ack_html = <<<HTML
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f0e8;padding:24px 0;margin:0;font-family:Arial,Helvetica,sans-serif">
   <tr><td align="center">
