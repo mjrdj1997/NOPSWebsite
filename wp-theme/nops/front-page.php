@@ -60,6 +60,132 @@
 </section>
 
 
+<!-- ===== AI Home Concierge ===== -->
+<section class="section tone-paper2" id="ai-concierge">
+  <div class="container" style="max-width:840px">
+    <div class="center reveal">
+      <p class="eyebrow">AI Home Concierge</p>
+      <h2>Tell us what you're looking for.</h2>
+      <p class="lead center">Describe your ideal New Orleans home in your own words. Kari's concierge will point you to matching listings — and can set up a personal shortlist.</p>
+    </div>
+    <div class="reveal" style="margin-top:30px">
+      <form id="conc-form" class="conc-form" autocomplete="off">
+        <label for="conc-q" class="fl" style="display:block;margin-bottom:8px">Describe your ideal home</label>
+        <textarea id="conc-q" rows="3" maxlength="600" required placeholder="e.g. A 3-bedroom historic home in the Marigny or Bywater under $600k, with a courtyard and off-street parking, walkable to coffee."></textarea>
+        <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" id="conc-hp" tabindex="-1" autocomplete="off"></div>
+        <button type="submit" id="conc-go" class="btn btn--gold" style="justify-content:center;margin-top:14px">Find my matches</button>
+      </form>
+      <div id="conc-result" class="conc-result" aria-live="polite" hidden></div>
+      <p class="conc-fineprint">Kari's AI concierge helps with home criteria only — location, price, size, style, and features. In keeping with Fair Housing law, it doesn't advise on neighborhoods by demographics, schools, or safety; for that guidance, <a href="/contact/">talk with Kari directly</a>.</p>
+    </div>
+  </div>
+</section>
+<style>
+#ai-concierge .conc-form textarea{width:100%;padding:14px 16px;border:1px solid var(--line,#e8e1d4);border-radius:10px;font:inherit;font-size:1rem;background:#fff;color:var(--ink,#1a1816);resize:vertical;box-sizing:border-box}
+#ai-concierge .conc-form textarea:focus{outline:none;border-color:var(--brass,#cd8c38);box-shadow:0 0 0 3px rgba(205,140,56,.15)}
+#ai-concierge .conc-result{margin-top:24px;background:#fff;border:1px solid var(--line,#e8e1d4);border-radius:12px;padding:24px 26px;scroll-margin-top:110px}
+#ai-concierge .conc-result h3{margin:0 0 10px;font-family:Georgia,serif;font-size:1.2rem;color:var(--ink,#1a1816)}
+#ai-concierge .conc-summary{font-size:1.05rem;line-height:1.6;color:#403c38;margin:0 0 18px}
+#ai-concierge .conc-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 20px}
+#ai-concierge .conc-tag{font-size:.8rem;background:#f4f0e8;border:1px solid #e8e1d4;color:#6b6560;padding:5px 11px;border-radius:20px}
+#ai-concierge .conc-actions{display:flex;flex-wrap:wrap;gap:12px}
+#ai-concierge .conc-lead{margin-top:20px;border-top:1px solid var(--line,#e8e1d4);padding-top:20px}
+#ai-concierge .conc-lead .form-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+#ai-concierge .conc-lead input{flex:1 1 180px;padding:11px 14px;border:1px solid var(--line,#e8e1d4);border-radius:8px;font:inherit;box-sizing:border-box}
+#ai-concierge .conc-fineprint{color:var(--muted,#6b6560);font-size:.78rem;line-height:1.5;text-align:center;margin-top:16px}
+#ai-concierge .conc-spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:concspin .7s linear infinite;vertical-align:-2px;margin-right:8px}
+@keyframes concspin{to{transform:rotate(360deg)}}
+</style>
+<script>
+(function(){
+  var cfg={
+    endpoint:  <?php echo wp_json_encode( esc_url_raw( rest_url('nops/v1/concierge') ) ); ?>,
+    nonce:     <?php echo wp_json_encode( wp_create_nonce('wp_rest') ); ?>,
+    leadUrl:   <?php echo wp_json_encode( esc_url_raw( admin_url('admin-post.php') ) ); ?>,
+    leadNonce: <?php echo wp_json_encode( wp_create_nonce('nops_contact') ); ?>
+  };
+  var form=document.getElementById('conc-form'); if(!form) return;
+  var q=document.getElementById('conc-q'), hp=document.getElementById('conc-hp'),
+      go=document.getElementById('conc-go'), out=document.getElementById('conc-result');
+  var lastQuery='', lastCriteria=null, lastSummary='';
+  function el(t,c,x){var e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e;}
+  function show(){ out.hidden=false; out.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+  form.addEventListener('submit',function(ev){
+    ev.preventDefault();
+    if(hp.value) return;
+    var text=q.value.trim(); if(!text) return;
+    lastQuery=text; go.disabled=true; go.innerHTML='<span class="conc-spin"></span>Thinking…';
+    out.hidden=true; out.innerHTML='';
+    fetch(cfg.endpoint,{method:'POST',headers:{'Content-Type':'application/json','X-WP-Nonce':cfg.nonce},body:JSON.stringify({q:text,website:hp.value})})
+      .then(function(r){return r.json().then(function(j){return{ok:r.ok,j:j};});})
+      .then(function(res){
+        go.disabled=false; go.textContent='Find my matches';
+        if(!res.ok||!res.j||res.j.error){ err((res.j&&res.j.error)||'Something went wrong. Please try again.'); return; }
+        render(res.j);
+      })
+      .catch(function(){ go.disabled=false; go.textContent='Find my matches'; err('The concierge is momentarily unavailable. Please try the search above.'); });
+  });
+
+  function err(m){ out.innerHTML=''; out.appendChild(el('p','conc-summary',m)); show(); }
+
+  function render(j){
+    lastCriteria=j.criteria||{}; lastSummary=j.summary||'';
+    out.innerHTML='';
+    out.appendChild(el('h3',null,'Here’s what I’m hearing'));
+    out.appendChild(el('p','conc-summary', j.summary||''));
+    var c=j.criteria||{}, tags=[];
+    if(c.neighborhoods&&c.neighborhoods.length) tags=tags.concat(c.neighborhoods);
+    if(c.price_max) tags.push('Up to $'+Number(c.price_max).toLocaleString());
+    else if(c.price_min) tags.push('From $'+Number(c.price_min).toLocaleString());
+    if(c.beds_min) tags.push(c.beds_min+'+ bd');
+    if(c.baths_min) tags.push(c.baths_min+'+ ba');
+    if(c.property_type&&c.property_type!=='any') tags.push(c.property_type);
+    if(c.features&&c.features.length) tags=tags.concat(c.features);
+    if(tags.length){ var tw=el('div','conc-tags'); tags.forEach(function(t){ tw.appendChild(el('span','conc-tag',t)); }); out.appendChild(tw); }
+    if(j.followup) out.appendChild(el('p','conc-summary', j.followup));
+    var act=el('div','conc-actions');
+    if(j.search_url){ var a=el('a','btn btn--gold','View matching listings'); a.href=j.search_url; a.style.color='#fff'; act.appendChild(a); }
+    var lb=el('button','btn btn--ghost','Have Kari hand-pick a shortlist'); lb.type='button'; act.appendChild(lb);
+    out.appendChild(act);
+    lb.addEventListener('click',function(){ lb.style.display='none'; out.appendChild(lead()); });
+    show();
+  }
+
+  function lead(){
+    var w=el('div','conc-lead');
+    w.appendChild(el('p','conc-summary','Leave your details and Kari will personally put together a shortlist for you.'));
+    var r1=el('div','form-row'), fn=el('input'), ln=el('input');
+    fn.placeholder='First name'; fn.required=true; ln.placeholder='Last name';
+    r1.appendChild(fn); r1.appendChild(ln); w.appendChild(r1);
+    var r2=el('div','form-row'), em=el('input'), ph=el('input');
+    em.type='email'; em.placeholder='Email'; em.required=true; ph.type='tel'; ph.placeholder='Phone (optional)';
+    r2.appendChild(em); r2.appendChild(ph); w.appendChild(r2);
+    var send=el('button','btn btn--gold','Send my request'); send.type='button'; send.style.color='#fff'; w.appendChild(send);
+    var note=el('p','conc-summary'); note.style.margin='12px 0 0'; w.appendChild(note);
+    send.addEventListener('click',function(){
+      if(!fn.value.trim()||!em.value.trim()){ note.textContent='Please add your first name and email.'; return; }
+      send.disabled=true; send.innerHTML='<span class="conc-spin"></span>Sending…';
+      var msg='AI Concierge request:\n\n"'+lastQuery+'"\n\nConcierge summary:\n'+lastSummary+'\n\nParsed criteria:\n'+JSON.stringify(lastCriteria,null,2);
+      var fd=new FormData();
+      fd.append('action','nops_contact'); fd.append('nops_nonce',cfg.leadNonce); fd.append('nops_website','');
+      fd.append('first_name',fn.value); fd.append('last_name',ln.value); fd.append('email',em.value); fd.append('phone',ph.value);
+      fd.append('interest','AI Concierge — shortlist request'); fd.append('message',msg);
+      fetch(cfg.leadUrl,{method:'POST',body:fd,redirect:'manual'})
+        .then(function(r){
+          if(r.type==='opaqueredirect'||r.ok||r.status===0){
+            send.style.display='none'; r1.style.display='none'; r2.style.display='none';
+            note.textContent='Thank you — your request is on its way to Kari. She’ll be in touch personally, usually within one business day.';
+          } else { send.disabled=false; send.textContent='Send my request'; note.textContent='Sorry — that didn’t go through. Please call 504-473-5969.'; }
+        })
+        .catch(function(){ send.style.display='none'; r1.style.display='none'; r2.style.display='none'; note.textContent='Thank you — your request is on its way to Kari.'; });
+    });
+    return w;
+  }
+})();
+</script>
+
+
 <!-- ===== Services ===== -->
 <section class="section tone-cream">
   <div class="container">

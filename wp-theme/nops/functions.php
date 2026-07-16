@@ -184,6 +184,171 @@ add_action('admin_post_nops_contact', 'nops_handle_contact');
 add_action('admin_post_nopriv_nops_contact', 'nops_handle_contact');
 
 /* ------------------------------------------------------------------
+ * AI Home Concierge — natural-language home search powered by the
+ * Anthropic API. Public REST endpoint (nops/v1/concierge) calls Claude
+ * server-side (key in wp-config, never exposed to the browser), returns a
+ * warm reply in Kari's voice + structured criteria mapped to a Buying
+ * Buddy IDX search. Fair-Housing guardrails are enforced in the prompt.
+ * ------------------------------------------------------------------ */
+add_action('rest_api_init', function () {
+    register_rest_route('nops/v1', '/concierge', [
+        'methods'             => 'POST',
+        'callback'            => 'nops_concierge_handler',
+        'permission_callback' => '__return_true',
+    ]);
+});
+
+function nops_client_ip() {
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($parts[0]);
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+}
+
+function nops_concierge_handler(WP_REST_Request $req) {
+    // CSRF: require a valid REST nonce issued to the page.
+    if (!wp_verify_nonce($req->get_header('X-WP-Nonce'), 'wp_rest')) {
+        return new WP_REST_Response(['error' => 'Your session expired — please refresh the page and try again.'], 403);
+    }
+    $p = $req->get_json_params();
+    if (!empty($p['website'])) { // honeypot
+        return new WP_REST_Response(['error' => 'Request could not be processed.'], 400);
+    }
+    $text = trim((string) ($p['q'] ?? ''));
+    if ($text === '') {
+        return new WP_REST_Response(['error' => 'Please describe the home you have in mind.'], 400);
+    }
+    if (mb_strlen($text) > 600) $text = mb_substr($text, 0, 600);
+
+    // Per-IP rate limit: 8 requests/hour.
+    $rk  = 'nops_conc_rl_' . md5(nops_client_ip());
+    $cnt = (int) get_transient($rk);
+    if ($cnt >= 8) {
+        return new WP_REST_Response(['error' => "You've reached the concierge limit for now. Please try again later, or call Kari directly at 504-473-5969."], 429);
+    }
+    // Global monthly call ceiling (cost guard).
+    $bk   = 'nops_conc_month_' . gmdate('Y_m');
+    $mcnt = (int) get_option($bk, 0);
+    if ($mcnt >= 3000) {
+        return new WP_REST_Response(['error' => 'Our AI concierge is resting for the moment — please use the search above or contact Kari directly.'], 503);
+    }
+
+    $result = nops_concierge_generate($text);
+    if (is_wp_error($result)) {
+        return new WP_REST_Response(['error' => $result->get_error_message()], 502);
+    }
+
+    // Count only successful calls.
+    set_transient($rk, $cnt + 1, HOUR_IN_SECONDS);
+    update_option($bk, $mcnt + 1, false);
+
+    return new WP_REST_Response($result, 200);
+}
+
+/**
+ * Core: call Claude with the visitor's request; return an array of
+ * [summary, followup, criteria, search_url] or a WP_Error.
+ */
+function nops_concierge_generate($text) {
+    $key = defined('ANTHROPIC_API_KEY') ? ANTHROPIC_API_KEY : '';
+    if (!$key) return new WP_Error('noconfig', 'The concierge is not configured yet.');
+
+    $tool = [
+        'name'         => 'present_home_search',
+        'description'  => "Return a warm reply in Kari's voice plus the structured home-search criteria you extracted.",
+        'input_schema' => [
+            'type'       => 'object',
+            'properties' => [
+                'summary'           => ['type' => 'string', 'description' => "A warm, gracious 2-4 sentence reply in Kari's voice that reflects back what the visitor is looking for and invites next steps. Never state specific listings, prices, or availability."],
+                'neighborhoods'     => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Matched New Orleans neighborhoods, only from the allowed list in the system prompt.'],
+                'price_min'         => ['type' => 'integer'],
+                'price_max'         => ['type' => 'integer'],
+                'beds_min'          => ['type' => 'integer'],
+                'baths_min'         => ['type' => 'number'],
+                'property_type'     => ['type' => 'string', 'enum' => ['any', 'single-family', 'historic', 'condo', 'townhouse', 'multi-family', 'investment']],
+                'features'          => ['type' => 'array', 'items' => ['type' => 'string'], 'description' => 'Objective, property-related features requested (e.g. courtyard, off-street parking, renovated kitchen, pool).'],
+                'followup_question' => ['type' => 'string', 'description' => 'One short clarifying question if the request is too vague to search; otherwise an empty string.'],
+            ],
+            'required'   => ['summary'],
+        ],
+    ];
+
+    $body = [
+        'model'       => 'claude-haiku-4-5-20251001',
+        'max_tokens'  => 800,
+        'system'      => nops_concierge_system_prompt(),
+        'tools'       => [$tool],
+        'tool_choice' => ['type' => 'tool', 'name' => 'present_home_search'],
+        'messages'    => [['role' => 'user', 'content' => $text]],
+    ];
+
+    $resp = wp_remote_post('https://api.anthropic.com/v1/messages', [
+        'headers' => [
+            'x-api-key'         => $key,
+            'anthropic-version' => '2023-06-01',
+            'content-type'      => 'application/json',
+        ],
+        'body'    => wp_json_encode($body),
+        'timeout' => 30,
+    ]);
+
+    if (is_wp_error($resp)) {
+        return new WP_Error('net', 'The concierge is momentarily unavailable. Please try the search above.');
+    }
+    $code = wp_remote_retrieve_response_code($resp);
+    $data = json_decode(wp_remote_retrieve_body($resp), true);
+    if ($code !== 200 || empty($data['content'])) {
+        return new WP_Error('api', 'The concierge is momentarily unavailable. Please try the search above.');
+    }
+
+    $criteria = null;
+    foreach ($data['content'] as $block) {
+        if (($block['type'] ?? '') === 'tool_use' && ($block['name'] ?? '') === 'present_home_search') {
+            $criteria = $block['input'];
+            break;
+        }
+    }
+    if (!is_array($criteria) || empty($criteria['summary'])) {
+        return new WP_Error('parse', 'Sorry — I could not quite parse that. Try naming the area, budget, and size (for example, a 3-bed in Mid-City under 500k).');
+    }
+
+    return [
+        'summary'    => (string) $criteria['summary'],
+        'followup'   => (string) ($criteria['followup_question'] ?? ''),
+        'criteria'   => $criteria,
+        'search_url' => nops_concierge_search_url($criteria),
+    ];
+}
+
+function nops_concierge_system_prompt() {
+    return <<<'PROMPT'
+You are the AI home concierge for New Orleans Property Services, the boutique brokerage of Kari Ayala (a New Orleans REALTOR since 1998; firm established 2007). Your job is to warmly help a website visitor describe the New Orleans home they want and translate it into a home search.
+
+VOICE: gracious, warm, concise, white-glove — like a trusted local friend who knows every block of New Orleans. Write the summary in the first person on behalf of Kari's team ("we"/"I"), 2 to 4 sentences. Do NOT invent or state specific listings, addresses, prices, or availability — you are setting up a search, not quoting inventory.
+
+FAIR HOUSING — STRICT AND NON-NEGOTIABLE: You must comply with the U.S. Fair Housing Act. NEVER steer, rank, or make recommendations based on — or on proxies for — race, color, religion, national origin, sex, familial status, or disability. Do NOT describe or compare neighborhoods by safety or crime, "good" or "bad" schools, religion or houses of worship, or the kinds of people who live there, and do not fulfill such requests. If a visitor asks for any of that, gently decline that part and redirect to objective criteria you CAN help with: location and geography, price, size (beds/baths), home style, and property features (such as walkability to a named place, a courtyard, or off-street parking). Keep everything about the property and objective geography.
+
+NEIGHBORHOODS: Only use New Orleans-area neighborhood names from this list: Garden District, Lower Garden District, Uptown, Carrollton, Irish Channel, French Quarter, Marigny, Bywater, Treme, Mid-City, Lakeview, Gentilly, Algiers Point, Warehouse District, Central Business District. If the visitor names a place outside greater New Orleans, gently note that New Orleans Property Services focuses on the New Orleans area and steer back.
+
+Always respond by calling the present_home_search tool with a friendly summary and whatever criteria you can extract. If the request is too vague to search, still provide a warm summary and set followup_question to one short clarifying question.
+PROMPT;
+}
+
+function nops_concierge_search_url($c) {
+    $f = [];
+    if (!empty($c['price_min'])) $f[] = 'price_min:' . (int) $c['price_min'];
+    if (!empty($c['price_max'])) $f[] = 'price_max:' . (int) $c['price_max'];
+    if (!empty($c['beds_min']))  $f[] = 'bedrooms_total_min:' . (int) $c['beds_min'];
+    if (!empty($c['baths_min'])) $f[] = 'baths_total_min:' . (int) $c['baths_min'];
+    // Buying Buddy reads its filter from ?filter=key:value+key:value on the results page.
+    // Only universal numeric keys are mapped here; neighborhood/property-type mapping needs
+    // GSREIN area/type codes and is added once the live feed is on (currently demo mode).
+    if ($f) return home_url('/listing-results/') . '?filter=' . implode('+', $f);
+    return home_url('/listing-search/');
+}
+
+/* ------------------------------------------------------------------
  * SEO: per-page meta description, canonical, Open Graph, Twitter card.
  * (WordPress core already outputs <title> via title-tag support.)
  * ------------------------------------------------------------------ */
