@@ -9,7 +9,7 @@
 
 <section class="section"><div class="container">
   <div class="grid grid--4 reveal">
-    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
+    <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gardendistrict-nops.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/uptown-nops.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/french-quarter-nops.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
     <a class="hood" href="/contact/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.35)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/marigny-nops.jpg')); ?>')"><span class="hood__label"><h3>Marigny</h3><span>Creole cottages &amp; music</span></span></a>
