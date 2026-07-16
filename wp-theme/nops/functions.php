@@ -387,12 +387,18 @@ function nops_local_schema() {
     $data = [
         '@context'   => 'https://schema.org',
         '@type'      => 'RealEstateAgent',
+        '@id'        => home_url('/#agent'),
         'name'       => 'New Orleans Property Services',
         'image'      => get_theme_file_uri('assets/logo.jpg'),
+        'logo'       => get_theme_file_uri('assets/logo.jpg'),
         'url'        => home_url('/'),
         'telephone'  => '+1-504-473-5969',
         'priceRange' => '$$',
-        'areaServed' => 'New Orleans, LA',
+        'areaServed' => [
+            ['@type' => 'City', 'name' => 'New Orleans, LA'],
+            'Garden District', 'Uptown New Orleans', 'French Quarter', 'Marigny',
+            'Bywater', 'Lakeview', 'Mid-City', 'Irish Channel', 'Warehouse District',
+        ],
         'address'    => [
             '@type'           => 'PostalAddress',
             'streetAddress'   => '2801 St. Charles Ave, Unit 111B',
@@ -401,15 +407,67 @@ function nops_local_schema() {
             'postalCode'      => '70115',
             'addressCountry'  => 'US',
         ],
+        'geo'        => ['@type' => 'GeoCoordinates', 'latitude' => 29.9268, 'longitude' => -90.0870],
         'founder'    => ['@type' => 'Person', 'name' => 'Kari Kramer Ayala'],
         'sameAs'     => [
             'https://www.instagram.com/nolakari1/',
+            'https://www.facebook.com/neworleanspropertyservices',
             'https://www.linkedin.com/in/kari-ayala-2705446/',
+            'https://www.zillow.com/profile/nolakari',
         ],
     ];
     echo "\n<script type=\"application/ld+json\">" . wp_json_encode($data) . "</script>\n";
 }
 add_action('wp_head', 'nops_local_schema', 20);
+
+/* Article (BlogPosting) schema on single Journal posts. */
+function nops_article_schema() {
+    if (!is_singular('post')) return;
+    $post = get_queried_object();
+    $img  = get_the_post_thumbnail_url($post, 'full');
+    if (!$img) $img = get_theme_file_uri('assets/logo.jpg');
+    $data = [
+        '@context'         => 'https://schema.org',
+        '@type'            => 'BlogPosting',
+        'headline'         => get_the_title($post),
+        'description'      => wp_strip_all_tags(get_the_excerpt($post)),
+        'image'            => $img,
+        'datePublished'    => get_the_date('c', $post),
+        'dateModified'     => get_the_modified_date('c', $post),
+        'author'           => ['@type' => 'Person', 'name' => 'Kari Kramer Ayala', 'url' => home_url('/about/')],
+        'publisher'        => [
+            '@type' => 'Organization',
+            'name'  => 'New Orleans Property Services',
+            'logo'  => ['@type' => 'ImageObject', 'url' => get_theme_file_uri('assets/logo.jpg')],
+        ],
+        'mainEntityOfPage' => get_permalink($post),
+    ];
+    echo "\n<script type=\"application/ld+json\">" . wp_json_encode($data) . "</script>\n";
+}
+add_action('wp_head', 'nops_article_schema', 21);
+
+/* BreadcrumbList schema on inner pages/posts. */
+function nops_breadcrumb_schema() {
+    if (is_front_page()) return;
+    $items = [['name' => 'Home', 'url' => home_url('/')]];
+    if (is_singular('post')) {
+        $items[] = ['name' => 'Journal', 'url' => home_url('/journal/')];
+        $items[] = ['name' => get_the_title(), 'url' => get_permalink()];
+    } elseif (is_page()) {
+        $items[] = ['name' => get_the_title(), 'url' => get_permalink()];
+    } elseif (is_home()) {
+        $items[] = ['name' => 'Journal', 'url' => home_url('/journal/')];
+    } else {
+        return;
+    }
+    $list = [];
+    foreach ($items as $i => $it) {
+        $list[] = ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $it['name'], 'item' => $it['url']];
+    }
+    $data = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => $list];
+    echo "\n<script type=\"application/ld+json\">" . wp_json_encode($data) . "</script>\n";
+}
+add_action('wp_head', 'nops_breadcrumb_schema', 22);
 
 /* ------------------------------------------------------------------
  * Google Analytics 4. Outputs the gtag snippet only when a valid
