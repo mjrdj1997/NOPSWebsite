@@ -208,15 +208,10 @@
       <h2>@nolakari1 on Instagram</h2>
       <p class="lead center">New listings, sold celebrations, and a local's view of New Orleans — pulled straight from Instagram so the site stays current.</p>
     </div>
-    <div class="ig-grid reveal" style="margin-top:40px">
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/hoffman-mansion.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/bywater-cottage.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/lakeview.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/midcity.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/shotgun-01.jpg')); ?>')"></a>
-      <a href="#" class="ig-tile" style="background-image:url('<?php echo esc_url(get_theme_file_uri('assets/nola/lanaux-mansion.jpg')); ?>')"></a>
+    <div class="ig-feed reveal" style="margin-top:40px">
+      <?php echo do_shortcode('[instagram-feed feed="1"]'); ?>
     </div>
-    <div class="center" style="margin-top:34px"><a href="#" class="btn btn--ghost">Follow @nolakari1</a></div>
+    <div class="center" style="margin-top:34px"><a href="https://www.instagram.com/nolakari1/" target="_blank" rel="noopener" class="btn btn--ghost">Follow @nolakari1</a></div>
   </div>
 </section>
 
