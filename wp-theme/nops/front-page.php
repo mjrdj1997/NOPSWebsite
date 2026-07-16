@@ -262,22 +262,8 @@
       <p class="eyebrow">Client Stories</p>
       <h2>Trusted across the city</h2>
     </div>
-    <div class="grid grid--3 reveal" style="margin-top:48px">
-      <div class="quote">
-        <div class="quote__stars">★★★★★</div>
-        <p>"Kari knows New Orleans like no one else. She guided us to the perfect historic home and made a complex purchase feel effortless."</p>
-        <div class="quote__by"><span class="quote__avatar">MR</span><span><span class="quote__name">Marie &amp; Robert D.</span><br><span class="quote__loc">Garden District</span></span></div>
-      </div>
-      <div class="quote">
-        <div class="quote__stars">★★★★★</div>
-        <p>"Truly white-glove service. Our home sold above asking in under two weeks. Kari's pricing and marketing were spot on."</p>
-        <div class="quote__by"><span class="quote__avatar">JT</span><span><span class="quote__name">James T.</span><br><span class="quote__loc">Uptown</span></span></div>
-      </div>
-      <div class="quote">
-        <div class="quote__stars">★★★★★</div>
-        <p>"As an out-of-state investor I relied entirely on Kari's judgment — and she delivered a fantastic rental property with real upside."</p>
-        <div class="quote__by"><span class="quote__avatar">AL</span><span><span class="quote__name">Alicia L.</span><br><span class="quote__loc">Marigny</span></span></div>
-      </div>
+    <div class="reveal" style="margin-top:48px">
+      <?php echo do_shortcode('[trustindex no-registration=zillow]'); ?>
     </div>
     <div class="center" style="margin-top:40px"><a href="https://www.zillow.com/profile/nolakari" target="_blank" rel="noopener" class="btn btn--ghost">★ Read Kari's reviews on Zillow →</a></div>
   </div>
