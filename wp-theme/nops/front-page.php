@@ -73,7 +73,12 @@
         <label for="conc-q" class="fl" style="display:block;margin-bottom:8px">Describe your ideal home</label>
         <textarea id="conc-q" rows="3" maxlength="600" required placeholder="e.g. A 3-bedroom historic home in the Marigny or Bywater under $600k, with a courtyard and off-street parking, walkable to coffee."></textarea>
         <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" id="conc-hp" tabindex="-1" autocomplete="off"></div>
-        <button type="submit" id="conc-go" class="btn btn--gold" style="justify-content:center;margin-top:14px">Find my matches</button>
+        <div class="conc-controls">
+          <button type="button" id="conc-mic" class="btn btn--ghost conc-mic" hidden aria-pressed="false" title="Speak your search">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="vertical-align:-4px;margin-right:7px"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0"/><path d="M12 17v3"/></svg><span class="conc-mic-txt">Speak your search</span>
+          </button>
+          <button type="submit" id="conc-go" class="btn btn--gold" style="justify-content:center">Find my matches</button>
+        </div>
       </form>
       <div id="conc-result" class="conc-result" aria-live="polite" hidden></div>
       <p class="conc-fineprint">Kari's AI concierge helps with home criteria only — location, price, size, style, and features. In keeping with Fair Housing law, it doesn't advise on neighborhoods by demographics, schools, or safety; for that guidance, <a href="/contact/">talk with Kari directly</a>.</p>
@@ -95,6 +100,11 @@
 #ai-concierge .conc-fineprint{color:var(--muted,#6b6560);font-size:.78rem;line-height:1.5;text-align:center;margin-top:16px}
 #ai-concierge .conc-spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;border-radius:50%;animation:concspin .7s linear infinite;vertical-align:-2px;margin-right:8px}
 @keyframes concspin{to{transform:rotate(360deg)}}
+#ai-concierge .conc-controls{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:14px}
+#ai-concierge .conc-mic{display:inline-flex;align-items:center}
+#ai-concierge .conc-mic.listening{background:#c0392b;border-color:#c0392b;color:#fff}
+#ai-concierge .conc-mic.listening svg{animation:concpulse 1s ease-in-out infinite}
+@keyframes concpulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>
 <script>
 (function(){
@@ -110,6 +120,21 @@
   var lastQuery='', lastCriteria=null, lastSummary='';
   function el(t,c,x){var e=document.createElement(t); if(c)e.className=c; if(x!=null)e.textContent=x; return e;}
   function show(){ out.hidden=false; out.scrollIntoView({behavior:'smooth',block:'center'}); }
+
+  // Voice input (Web Speech API) — progressive enhancement; button stays hidden where unsupported.
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var mic = document.getElementById('conc-mic');
+  if (SR && mic) {
+    mic.hidden = false;
+    var rec = new SR(); rec.lang='en-US'; rec.interimResults=true; rec.continuous=false; rec.maxAlternatives=1;
+    var listening=false, baseText='', micTxt=mic.querySelector('.conc-mic-txt');
+    function setListening(on){ listening=on; mic.classList.toggle('listening',on); mic.setAttribute('aria-pressed',on?'true':'false'); if(micTxt) micTxt.textContent = on?'Listening… tap to stop':'Speak your search'; }
+    mic.addEventListener('click',function(){ if(listening){ rec.stop(); return; } baseText = q.value ? q.value.replace(/\s+$/,'')+' ' : ''; try{ rec.start(); }catch(e){} });
+    rec.onstart=function(){ setListening(true); q.focus(); };
+    rec.onend=function(){ setListening(false); };
+    rec.onerror=function(e){ setListening(false); if(e&&e.error==='not-allowed'&&micTxt){ micTxt.textContent='Mic blocked — allow access'; setTimeout(function(){ if(micTxt) micTxt.textContent='Speak your search'; },2600); } };
+    rec.onresult=function(ev){ var interim='',final=''; for(var i=ev.resultIndex;i<ev.results.length;i++){ var t=ev.results[i][0].transcript; if(ev.results[i].isFinal) final+=t; else interim+=t; } q.value=(baseText+final+interim).slice(0,600); if(final) baseText=(baseText+final).replace(/\s+$/,'')+' '; };
+  }
 
   form.addEventListener('submit',function(ev){
     ev.preventDefault();
