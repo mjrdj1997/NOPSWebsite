@@ -425,6 +425,92 @@ function nops_concierge_search_url($c) {
     return nops_listing_url($f);
 }
 
+/**
+ * The NOPS quick-search bar (neighborhood + ZIP + max price -> Buying Buddy
+ * results). Reused on the homepage AND injected onto the Buying Buddy
+ * search/results pages, where BB's own search UI is hidden (see main.css) so
+ * every visitor funnels through our search. $wrap adds the .container (homepage);
+ * pass false when the surrounding template already provides one (BB pages).
+ */
+function nops_search_bar($wrap = true) {
+    $results  = esc_url(home_url('/listing-results/'));
+    $search   = esc_url(home_url('/listing-search/'));
+    $headline = ['Garden District', 'Uptown', 'French Quarter', 'Marigny / Bywater', 'Lakeview', 'Mid-City'];
+    if ($wrap) echo '<div class="container">';
+    ?>
+    <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo $search; ?>" data-results-url="<?php echo $results; ?>">
+      <div class="field">
+        <label for="qs-nbhd">Neighborhood</label>
+        <select id="qs-nbhd" name="nbhd">
+          <option value="">Any area</option>
+          <?php foreach ($headline as $hood) : ?>
+            <option value="<?php echo esc_attr($hood); ?>"><?php echo esc_html($hood); ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qs-zip">or ZIP code</label>
+        <input id="qs-zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 70130" pattern="[0-9 ,]*">
+      </div>
+      <div class="field">
+        <label for="qs-price">Max Price</label>
+        <select id="qs-price" name="price">
+          <option value="">No max</option>
+          <option value="price_max:400000">$400k</option>
+          <option value="price_max:600000">$600k</option>
+          <option value="price_max:800000">$800k</option>
+          <option value="price_min:1000000">$1M+</option>
+        </select>
+      </div>
+      <button class="btn btn--gold" type="submit">Search MLS</button>
+    </form>
+    <?php if ($wrap) echo '</div>'; ?>
+    <script>
+    (function () {
+      var form = document.getElementById('mls-quicksearch');
+      if (!form) return;
+      var HOOD_ZIPS = <?php echo wp_json_encode(nops_nola_hood_zips()); ?>;
+      var RESULTS = form.dataset.resultsUrl;
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var zips = [];
+        var nbhd = form.querySelector('#qs-nbhd').value;
+        if (nbhd && HOOD_ZIPS[nbhd]) zips = zips.concat(HOOD_ZIPS[nbhd]);
+        var typed = (form.querySelector('#qs-zip').value.match(/\d{5}/g)) || [];
+        zips = zips.concat(typed);
+        zips = zips.filter(function (z, i) { return zips.indexOf(z) === i; });
+        var params = {};
+        if (zips.length) params.zip_code = zips.join(',');
+        var price = form.querySelector('#qs-price').value;
+        if (price) { var p = price.split(':'); params[p[0]] = p[1]; }
+        var keys = Object.keys(params);
+        if (!keys.length) { window.location.href = RESULTS; return; }
+        var qs = ['data-filter=bb', 'mls_id=la248'];
+        keys.forEach(function (k) { qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k])); });
+        window.location.href = RESULTS + '?' + qs.join('&');
+      });
+    })();
+    </script>
+    <?php
+}
+
+/**
+ * Funnel visitors through our search: on the Buying Buddy search + results pages,
+ * inject the NOPS search bar above the content. BB's native SearchForm and the
+ * results "refine" bar are hidden in CSS (#MBBv3_SearchForm / form[refine-search]).
+ */
+add_filter('the_content', 'nops_inject_search_on_idx_pages');
+function nops_inject_search_on_idx_pages($content) {
+    if (!is_page(['listing-search', 'listing-results']) || !in_the_loop() || !is_main_query()) {
+        return $content;
+    }
+    ob_start();
+    echo '<div class="idx-quicksearch">';
+    nops_search_bar(false);
+    echo '</div>';
+    return ob_get_clean() . $content;
+}
+
 /* ------------------------------------------------------------------
  * SEO: per-page meta description, canonical, Open Graph, Twitter card.
  * (WordPress core already outputs <title> via title-tag support.)

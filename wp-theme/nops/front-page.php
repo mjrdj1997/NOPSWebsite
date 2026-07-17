@@ -25,77 +25,8 @@
   </div>
 </section>
 
-<!-- ===== Search bar (maps to IDX search) ===== -->
-<div class="container">
-  <?php
-    // Neighborhood filtering runs on ZIP (GSREIN's neighborhood field is unreliable;
-    // ZIP is clean). The dropdown maps each neighborhood to its ZIP set via the same
-    // canonical PHP map the concierge uses (nops_nola_hood_zips), and a ZIP box lets
-    // users enter ZIPs directly. Submit builds Buying Buddy's real results URL:
-    //   /listing-results/?data-filter=bb&mls_id=la248&zip_code=70130,70115&price_max=...
-  ?>
-  <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo esc_url(home_url('/listing-search/')); ?>" data-results-url="<?php echo esc_url(home_url('/listing-results/')); ?>">
-    <div class="field">
-      <label for="qs-nbhd">Neighborhood</label>
-      <select id="qs-nbhd" name="nbhd">
-        <option value="">Any area</option>
-        <?php foreach (array_keys(nops_nola_hood_zips()) as $hood) :
-          // Show the six headline neighborhoods in the quick bar (full list still maps).
-          if (!in_array($hood, ['Garden District','Uptown','French Quarter','Marigny / Bywater','Lakeview','Mid-City'], true)) continue; ?>
-          <option value="<?php echo esc_attr($hood); ?>"><?php echo esc_html($hood); ?></option>
-        <?php endforeach; ?>
-      </select>
-    </div>
-    <div class="field">
-      <label for="qs-zip">or ZIP code</label>
-      <input id="qs-zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 70130" pattern="[0-9 ,]*">
-    </div>
-    <div class="field">
-      <label for="qs-price">Max Price</label>
-      <select id="qs-price" name="price">
-        <option value="">No max</option>
-        <option value="price_max:400000">$400k</option>
-        <option value="price_max:600000">$600k</option>
-        <option value="price_max:800000">$800k</option>
-        <option value="price_min:1000000">$1M+</option>
-      </select>
-    </div>
-    <button class="btn btn--gold" type="submit">Search MLS</button>
-  </form>
-</div>
-<script>
-(function () {
-  var form = document.getElementById('mls-quicksearch');
-  if (!form) return;
-
-  // Same neighborhood -> ZIP set the server helper uses (single source of truth).
-  var HOOD_ZIPS = <?php echo wp_json_encode(nops_nola_hood_zips()); ?>;
-  var RESULTS = form.dataset.resultsUrl;
-
-  form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    var zips = [];
-    // Neighborhood -> its ZIP set
-    var nbhd = form.querySelector('#qs-nbhd').value;
-    if (nbhd && HOOD_ZIPS[nbhd]) zips = zips.concat(HOOD_ZIPS[nbhd]);
-    // Direct ZIP entry (accepts "70130", "70115 70118", "70115,70118")
-    var typed = (form.querySelector('#qs-zip').value.match(/\d{5}/g)) || [];
-    zips = zips.concat(typed);
-    zips = zips.filter(function (z, i) { return zips.indexOf(z) === i; }); // dedupe
-
-    var params = {};
-    if (zips.length) params.zip_code = zips.join(',');
-    var price = form.querySelector('#qs-price').value; // 'price_max:NNNN' or 'price_min:NNNN'
-    if (price) { var p = price.split(':'); params[p[0]] = p[1]; }
-
-    var keys = Object.keys(params);
-    if (!keys.length) { window.location.href = RESULTS; return; } // browse all
-    var qs = ['data-filter=bb', 'mls_id=la248'];
-    keys.forEach(function (k) { qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k])); });
-    window.location.href = RESULTS + '?' + qs.join('&');
-  });
-})();
-</script>
+<!-- ===== Search bar (neighborhood/ZIP/price -> Buying Buddy results) ===== -->
+<?php nops_search_bar(); ?>
 
 
 <!-- ===== Featured Listings (IDX) ===== -->

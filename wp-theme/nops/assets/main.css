@@ -344,3 +344,10 @@ textarea{resize:vertical;min-height:130px}
   .form-row{grid-template-columns:1fr}
   .topbar__left span:nth-child(3){display:none}
 }
+
+/* ---- Funnel visitors through the NOPS search: hide Buying Buddy's native
+   search UI (standalone SearchForm + the "refine" bar on the results grid).
+   Our bar is injected above the content on those pages (see functions.php). ---- */
+#MBBv3_SearchForm,
+#MBBv3_ListingResults form[refine-search]{ display:none !important; }
+.idx-quicksearch{ margin:0 0 34px }
