@@ -357,7 +357,7 @@ function nops_nola_hood_zips() {
         'Bywater'                   => ['70117'],
         'Marigny / Bywater'         => ['70117', '70116'],
         'Treme'                     => ['70116', '70119'],
-        'Mid-City'                  => ['70119', '70125'],
+        'Mid-City'                  => ['70119'],
         'Lakeview'                  => ['70124'],
         'Gentilly'                  => ['70122'],
         'Algiers Point'             => ['70114'],
@@ -383,7 +383,7 @@ function nops_zip_to_hood($zip) {
         '70112' => 'Central Business District', '70113' => 'Central City',
         '70114' => 'Algiers Point', '70115' => 'Uptown', '70116' => 'French Quarter',
         '70117' => 'Bywater', '70118' => 'Uptown', '70119' => 'Mid-City',
-        '70122' => 'Gentilly', '70124' => 'Lakeview', '70125' => 'Mid-City',
+        '70122' => 'Gentilly', '70124' => 'Lakeview',
         '70130' => 'Garden District', '70131' => 'Algiers Point',
     ];
     return $primary[$zip] ?? '';
