@@ -32,7 +32,7 @@
     // (same format the AI concierge uses — see nops_concierge_search_url()).
     // The submit handler below assembles that string from the selections.
   ?>
-  <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo esc_url(nops_listing_url()); ?>">
+  <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo esc_url(home_url('/listing-search/')); ?>" data-results-url="<?php echo esc_url(home_url('/listing-results/')); ?>">
     <div class="field">
       <label for="qs-nbhd">Neighborhood</label>
       <select id="qs-nbhd" name="nbhd">
@@ -95,9 +95,11 @@
     if (nbhd && NBHD_CODES[nbhd]) parts.push(NBHD_CODES[nbhd]);
     if (type && TYPE_CODES[type]) parts.push(TYPE_CODES[type]);
 
-    var url = form.getAttribute('action');
-    if (parts.length) url += '?filter=' + parts.join('+');
-    window.location.href = url;
+    // "Search MLS" always lands on the ListingResults grid (the only page that
+    // reads ?filter=). With criteria we append the filter; with none we still
+    // show the results grid rather than bouncing back to an empty search form.
+    var base = form.dataset.resultsUrl;
+    window.location.href = parts.length ? base + '?filter=' + parts.join('+') : base;
   });
 })();
 </script>

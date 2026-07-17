@@ -336,20 +336,18 @@ PROMPT;
 }
 
 /**
- * Single source of truth for the Buying Buddy IDX search/results page.
- * The home-page quick-search form AND the AI concierge both route through this,
- * so they can never again point at different slugs (the bug that made searches
- * land on an empty search screen). If the IDX page is renamed after the feed
- * goes live, change this ONE value.
- *
- * NOTE: Buying Buddy only applies ?filter= on a page that hosts a *display*
- * widget (grid/list/map). The plain Property Search *form* ignores it. Once the
- * account is approved and live, confirm this slug points at a results/display
- * page — run a native Buying Buddy search and copy the URL it produces.
+ * Single source of truth for Buying Buddy IDX hand-off URLs. Two distinct pages:
+ *   /listing-results/  = [mbb_widget data-type="ListingResults"] — the results
+ *                        grid; this is the ONLY page that reads ?filter=.
+ *   /listing-search/   = [mbb_widget data-type="SearchForm"]    — just the form,
+ *                        which ignores ?filter=.
+ * So a criteria-carrying search MUST target /listing-results/?filter=..., while a
+ * bare "browse listings" link goes to the search form. The quick-search form and
+ * the AI concierge both route through here so they can never drift apart again.
  */
 function nops_listing_url($filter = '') {
-    $base = home_url('/listing-search/');
-    return $filter ? $base . '?filter=' . $filter : $base;
+    if ($filter) return home_url('/listing-results/') . '?filter=' . $filter;
+    return home_url('/listing-search/');
 }
 
 function nops_concierge_search_url($c) {
