@@ -335,6 +335,23 @@ Always respond by calling the present_home_search tool with a friendly summary a
 PROMPT;
 }
 
+/**
+ * Single source of truth for the Buying Buddy IDX search/results page.
+ * The home-page quick-search form AND the AI concierge both route through this,
+ * so they can never again point at different slugs (the bug that made searches
+ * land on an empty search screen). If the IDX page is renamed after the feed
+ * goes live, change this ONE value.
+ *
+ * NOTE: Buying Buddy only applies ?filter= on a page that hosts a *display*
+ * widget (grid/list/map). The plain Property Search *form* ignores it. Once the
+ * account is approved and live, confirm this slug points at a results/display
+ * page — run a native Buying Buddy search and copy the URL it produces.
+ */
+function nops_listing_url($filter = '') {
+    $base = home_url('/listing-search/');
+    return $filter ? $base . '?filter=' . $filter : $base;
+}
+
 function nops_concierge_search_url($c) {
     $f = [];
     if (!empty($c['price_min'])) $f[] = 'price_min:' . (int) $c['price_min'];
@@ -343,9 +360,8 @@ function nops_concierge_search_url($c) {
     if (!empty($c['baths_min'])) $f[] = 'baths_total_min:' . (int) $c['baths_min'];
     // Buying Buddy reads its filter from ?filter=key:value+key:value on the results page.
     // Only universal numeric keys are mapped here; neighborhood/property-type mapping needs
-    // GSREIN area/type codes and is added once the live feed is on (currently demo mode).
-    if ($f) return home_url('/listing-results/') . '?filter=' . implode('+', $f);
-    return home_url('/listing-search/');
+    // GSREIN area/type codes and is added once the live feed is on (currently pending approval).
+    return nops_listing_url($f ? implode('+', $f) : '');
 }
 
 /* ------------------------------------------------------------------

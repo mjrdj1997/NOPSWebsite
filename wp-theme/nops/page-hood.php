@@ -32,7 +32,7 @@ $name = get_the_title();
   <?php while (have_posts()) : the_post(); the_content(); endwhile; ?>
 
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin:34px 0 8px">
-    <a class="btn btn--gold" href="<?php echo esc_url(home_url('/listing-search/')); ?>" style="color:#fff">Search <?php echo esc_html($name); ?> listings</a>
+    <a class="btn btn--gold" href="<?php echo esc_url(nops_listing_url()); ?>" style="color:#fff">Search <?php echo esc_html($name); ?> listings</a>
     <a class="btn btn--ghost" href="<?php echo esc_url(home_url('/')); ?>#ai-concierge">Ask the AI concierge</a>
   </div>
   <p style="color:var(--muted);margin-top:20px">Thinking about buying or selling in <?php echo esc_html($name); ?>? <a href="<?php echo esc_url(home_url('/contact/')); ?>">Talk with Kari</a> — you'll work directly with a local broker who knows the neighborhood.</p>

@@ -4,7 +4,7 @@
 <section class="hero">
   <div class="container hero__grid">
     <div class="hero__text reveal">
-      <p class="eyebrow">New Orleans · Since 1998</p>
+      <p class="eyebrow">New Orleans Property Services · Since 2007</p>
       <h1>Your home in the city we know by heart.</h1>
       <p class="lead">A boutique brokerage delivering white-glove service to buyers, sellers, and investors — with an intimate knowledge of every street, corner, and historic block of New Orleans.</p>
       <div class="hero__actions">
@@ -27,22 +27,80 @@
 
 <!-- ===== Search bar (maps to IDX search) ===== -->
 <div class="container">
-  <form class="searchbar" method="get" action="<?php echo esc_url(home_url('/listing-search/')); ?>">
+  <?php
+    // The results page reads Buying Buddy's filter from ?filter=key:value+key:value
+    // (same format the AI concierge uses — see nops_concierge_search_url()).
+    // The submit handler below assembles that string from the selections.
+  ?>
+  <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo esc_url(nops_listing_url()); ?>">
     <div class="field">
-      <label>Neighborhood</label>
-      <select><option>Any area</option><option>Garden District</option><option>Uptown</option><option>French Quarter</option><option>Marigny / Bywater</option><option>Lakeview</option><option>Mid-City</option></select>
+      <label for="qs-nbhd">Neighborhood</label>
+      <select id="qs-nbhd" name="nbhd">
+        <option value="">Any area</option>
+        <option value="Garden District">Garden District</option>
+        <option value="Uptown">Uptown</option>
+        <option value="French Quarter">French Quarter</option>
+        <option value="Marigny / Bywater">Marigny / Bywater</option>
+        <option value="Lakeview">Lakeview</option>
+        <option value="Mid-City">Mid-City</option>
+      </select>
     </div>
     <div class="field">
-      <label>Type</label>
-      <select><option>All homes</option><option>Single-family</option><option>Historic / Creole</option><option>Condo</option><option>Multi-family</option><option>Investment</option></select>
+      <label for="qs-type">Type</label>
+      <select id="qs-type" name="ptype">
+        <option value="">All homes</option>
+        <option value="Single-family">Single-family</option>
+        <option value="Historic / Creole">Historic / Creole</option>
+        <option value="Condo">Condo</option>
+        <option value="Multi-family">Multi-family</option>
+        <option value="Investment">Investment</option>
+      </select>
     </div>
     <div class="field">
-      <label>Max Price</label>
-      <select><option>No max</option><option>$400k</option><option>$600k</option><option>$800k</option><option>$1M+</option></select>
+      <label for="qs-price">Max Price</label>
+      <select id="qs-price" name="price">
+        <option value="">No max</option>
+        <option value="price_max:400000">$400k</option>
+        <option value="price_max:600000">$600k</option>
+        <option value="price_max:800000">$800k</option>
+        <option value="price_min:1000000">$1M+</option>
+      </select>
     </div>
     <button class="btn btn--gold" type="submit">Search MLS</button>
   </form>
 </div>
+<script>
+(function () {
+  var form = document.getElementById('mls-quicksearch');
+  if (!form) return;
+
+  // Neighborhood + property-type filtering needs GSREIN area/type codes, which
+  // arrive with the live MLS feed (currently demo mode). Fill these maps then —
+  // each value is a Buying Buddy filter fragment (e.g. 'city:New Orleans').
+  // Until then, those selections pass through harmlessly and only price filters.
+  var NBHD_CODES = {
+    // 'Garden District': 'subdivision:...',
+  };
+  var TYPE_CODES = {
+    // 'Single-family': 'property_type:...',
+  };
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var parts = [];
+    var price = form.querySelector('#qs-price').value;   // already 'price_max:NNNN'
+    var nbhd  = form.querySelector('#qs-nbhd').value;
+    var type  = form.querySelector('#qs-type').value;
+    if (price) parts.push(price);
+    if (nbhd && NBHD_CODES[nbhd]) parts.push(NBHD_CODES[nbhd]);
+    if (type && TYPE_CODES[type]) parts.push(TYPE_CODES[type]);
+
+    var url = form.getAttribute('action');
+    if (parts.length) url += '?filter=' + parts.join('+');
+    window.location.href = url;
+  });
+})();
+</script>
 
 
 <!-- ===== Featured Listings (IDX) ===== -->
@@ -51,7 +109,7 @@
     <div class="center reveal">
       <p class="eyebrow">Now on the Market</p>
       <h2>Featured New Orleans listings</h2>
-      <p class="lead center">A selection of current listings, pulled live from the MLS. <a href="<?php echo esc_url(home_url('/listing-search/')); ?>">Search every home for sale &rarr;</a></p>
+      <p class="lead center">A selection of current listings, pulled live from the MLS. <a href="<?php echo esc_url(nops_listing_url()); ?>">Search every home for sale &rarr;</a></p>
     </div>
     <div class="reveal" style="margin-top:40px">
       <?php echo do_shortcode('[mbb_widget data-type="FeaturedGallery"]'); ?>
@@ -343,7 +401,7 @@
       <h2>Neighborhoods we call home</h2>
     </div>
     <div class="grid grid--4 reveal" style="margin-top:48px">
-      <a class="hood" href="/garden-district-homes-for-sale/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
+      <a class="hood" href="/garden-district-homes-for-sale/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/gardendistrict-nops.jpg')); ?>')"><span class="hood__label"><h3>Garden District</h3><span>Historic mansions &amp; oaks</span></span></a>
       <a class="hood" href="/uptown-homes-for-sale/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/uptown-nops.jpg')); ?>')"><span class="hood__label"><h3>Uptown</h3><span>Streetcars &amp; Magazine St.</span></span></a>
       <a class="hood" href="/communities/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/french-quarter-nops.jpg')); ?>')"><span class="hood__label"><h3>French Quarter</h3><span>Iron galleries &amp; courtyards</span></span></a>
       <a class="hood" href="/marigny-homes-for-sale/" style="background-image:linear-gradient(135deg,rgba(26,24,22,.2),rgba(26,24,22,.3)),url('<?php echo esc_url(get_theme_file_uri('assets/nola/marigny-nops.jpg')); ?>')"><span class="hood__label"><h3>Marigny / Bywater</h3><span>Creole cottages &amp; color</span></span></a>
