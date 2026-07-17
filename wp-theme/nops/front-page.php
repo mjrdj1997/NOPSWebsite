@@ -360,7 +360,7 @@
       <h2>@nolakari1 on Instagram</h2>
       <p class="lead center">New listings, sold celebrations, and a local's view of New Orleans — pulled straight from Instagram so the site stays current.</p>
     </div>
-    <div class="ig-feed reveal" style="margin-top:40px">
+    <div class="ig-feed" style="margin-top:40px">
       <?php echo do_shortcode('[instagram-feed feed="1"]'); ?>
     </div>
     <div class="center" style="margin-top:34px"><a href="https://www.instagram.com/nolakari1/" target="_blank" rel="noopener" class="btn btn--ghost">Follow @nolakari1</a></div>
