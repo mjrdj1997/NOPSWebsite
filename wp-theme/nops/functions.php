@@ -335,31 +335,94 @@ Always respond by calling the present_home_search tool with a friendly summary a
 PROMPT;
 }
 
+/* ------------------------------------------------------------------
+ * NOLA neighborhood <-> ZIP conversion (single source of truth).
+ *
+ * WHY: GSREIN's Neighborhood/sub_area MLS field is sparse and inconsistent
+ * (e.g. "Uptown"/"Mid-City" return nothing; "Garden District" coexists with the
+ * typo "Garden Districe The"). ZIP (Buying Buddy field `zip_code`) is clean and
+ * complete, so we filter by ZIP and let neighborhood names map to their ZIP set.
+ * A neighborhood spans several ZIPs and a ZIP spans several neighborhoods, so the
+ * map is deliberately many-to-many; hood->zips returns the SET to OR-filter on.
+ * ------------------------------------------------------------------ */
+function nops_nola_hood_zips() {
+    return [
+        'Garden District'           => ['70130', '70115'],
+        'Lower Garden District'     => ['70130'],
+        'Uptown'                    => ['70115', '70118'],
+        'Carrollton'                => ['70118'],
+        'Irish Channel'             => ['70115', '70130'],
+        'French Quarter'            => ['70116', '70130'],
+        'Marigny'                   => ['70116', '70117'],
+        'Bywater'                   => ['70117'],
+        'Marigny / Bywater'         => ['70117', '70116'],
+        'Treme'                     => ['70116', '70119'],
+        'Mid-City'                  => ['70119', '70125'],
+        'Lakeview'                  => ['70124'],
+        'Gentilly'                  => ['70122'],
+        'Algiers Point'             => ['70114'],
+        'Warehouse District'        => ['70130'],
+        'Central Business District' => ['70112', '70130'],
+    ];
+}
+
+/** Neighborhood name -> array of ZIPs (case-insensitive). [] if unknown. */
+function nops_hood_to_zips($name) {
+    $map = nops_nola_hood_zips();
+    if (isset($map[$name])) return $map[$name];
+    foreach ($map as $hood => $zips) {
+        if (strcasecmp($hood, $name) === 0) return $zips;
+    }
+    return [];
+}
+
+/** ZIP -> the best-known single neighborhood label (for display/reverse lookup). '' if unknown. */
+function nops_zip_to_hood($zip) {
+    $zip = substr(preg_replace('/\D/', '', (string) $zip), 0, 5);
+    $primary = [
+        '70112' => 'Central Business District', '70113' => 'Central City',
+        '70114' => 'Algiers Point', '70115' => 'Uptown', '70116' => 'French Quarter',
+        '70117' => 'Bywater', '70118' => 'Uptown', '70119' => 'Mid-City',
+        '70122' => 'Gentilly', '70124' => 'Lakeview', '70125' => 'Mid-City',
+        '70130' => 'Garden District', '70131' => 'Algiers Point',
+    ];
+    return $primary[$zip] ?? '';
+}
+
 /**
  * Single source of truth for Buying Buddy IDX hand-off URLs. Two distinct pages:
- *   /listing-results/  = [mbb_widget data-type="ListingResults"] — the results
- *                        grid; this is the ONLY page that reads ?filter=.
- *   /listing-search/   = [mbb_widget data-type="SearchForm"]    — just the form,
- *                        which ignores ?filter=.
- * So a criteria-carrying search MUST target /listing-results/?filter=..., while a
- * bare "browse listings" link goes to the search form. The quick-search form and
- * the AI concierge both route through here so they can never drift apart again.
+ *   /listing-results/ = [mbb_widget data-type="ListingResults"] — the results grid;
+ *                       the ONLY page that filters. It reads real MLS filter fields
+ *                       from the URL when `data-filter=bb` is present (this is the
+ *                       exact format Buying Buddy's own search form emits).
+ *   /listing-search/  = [mbb_widget data-type="SearchForm"] — just the form.
+ * Pass an assoc array of MLS filter fields (zip_code, price_min, price_max,
+ * bedrooms_total_min, baths_total_min, ...); empty array => the browse/search form.
  */
-function nops_listing_url($filter = '') {
-    if ($filter) return home_url('/listing-results/') . '?filter=' . $filter;
-    return home_url('/listing-search/');
+function nops_listing_url($fields = []) {
+    $fields = array_filter((array) $fields, function ($v) { return $v !== '' && $v !== null; });
+    if (!$fields) return home_url('/listing-search/');
+    $query = array_merge(['data-filter' => 'bb', 'mls_id' => 'la248'], $fields);
+    return home_url('/listing-results/') . '?' . http_build_query($query);
 }
 
 function nops_concierge_search_url($c) {
     $f = [];
-    if (!empty($c['price_min'])) $f[] = 'price_min:' . (int) $c['price_min'];
-    if (!empty($c['price_max'])) $f[] = 'price_max:' . (int) $c['price_max'];
-    if (!empty($c['beds_min']))  $f[] = 'bedrooms_total_min:' . (int) $c['beds_min'];
-    if (!empty($c['baths_min'])) $f[] = 'baths_total_min:' . (int) $c['baths_min'];
-    // Buying Buddy reads its filter from ?filter=key:value+key:value on the results page.
-    // Only universal numeric keys are mapped here; neighborhood/property-type mapping needs
-    // GSREIN area/type codes and is added once the live feed is on (currently pending approval).
-    return nops_listing_url($f ? implode('+', $f) : '');
+    if (!empty($c['price_min'])) $f['price_min']          = (int) $c['price_min'];
+    if (!empty($c['price_max'])) $f['price_max']          = (int) $c['price_max'];
+    if (!empty($c['beds_min']))  $f['bedrooms_total_min'] = (int) $c['beds_min'];
+    if (!empty($c['baths_min'])) $f['baths_total_min']    = (int) $c['baths_min'];
+    // Neighborhood filtering runs on ZIP (see nops_hood_to_zips) — GSREIN's
+    // neighborhood field is unreliable, ZIP is clean. Collect the ZIP set.
+    if (!empty($c['neighborhoods']) && is_array($c['neighborhoods'])) {
+        $zips = [];
+        foreach ($c['neighborhoods'] as $n) {
+            $zips = array_merge($zips, nops_hood_to_zips($n));
+        }
+        $zips = array_values(array_unique($zips));
+        if ($zips) $f['zip_code'] = implode(',', $zips);
+    }
+    return nops_listing_url($f);
 }
 
 /* ------------------------------------------------------------------

@@ -28,33 +28,27 @@
 <!-- ===== Search bar (maps to IDX search) ===== -->
 <div class="container">
   <?php
-    // The results page reads Buying Buddy's filter from ?filter=key:value+key:value
-    // (same format the AI concierge uses — see nops_concierge_search_url()).
-    // The submit handler below assembles that string from the selections.
+    // Neighborhood filtering runs on ZIP (GSREIN's neighborhood field is unreliable;
+    // ZIP is clean). The dropdown maps each neighborhood to its ZIP set via the same
+    // canonical PHP map the concierge uses (nops_nola_hood_zips), and a ZIP box lets
+    // users enter ZIPs directly. Submit builds Buying Buddy's real results URL:
+    //   /listing-results/?data-filter=bb&mls_id=la248&zip_code=70130,70115&price_max=...
   ?>
   <form class="searchbar" id="mls-quicksearch" method="get" action="<?php echo esc_url(home_url('/listing-search/')); ?>" data-results-url="<?php echo esc_url(home_url('/listing-results/')); ?>">
     <div class="field">
       <label for="qs-nbhd">Neighborhood</label>
       <select id="qs-nbhd" name="nbhd">
         <option value="">Any area</option>
-        <option value="Garden District">Garden District</option>
-        <option value="Uptown">Uptown</option>
-        <option value="French Quarter">French Quarter</option>
-        <option value="Marigny / Bywater">Marigny / Bywater</option>
-        <option value="Lakeview">Lakeview</option>
-        <option value="Mid-City">Mid-City</option>
+        <?php foreach (array_keys(nops_nola_hood_zips()) as $hood) :
+          // Show the six headline neighborhoods in the quick bar (full list still maps).
+          if (!in_array($hood, ['Garden District','Uptown','French Quarter','Marigny / Bywater','Lakeview','Mid-City'], true)) continue; ?>
+          <option value="<?php echo esc_attr($hood); ?>"><?php echo esc_html($hood); ?></option>
+        <?php endforeach; ?>
       </select>
     </div>
     <div class="field">
-      <label for="qs-type">Type</label>
-      <select id="qs-type" name="ptype">
-        <option value="">All homes</option>
-        <option value="Single-family">Single-family</option>
-        <option value="Historic / Creole">Historic / Creole</option>
-        <option value="Condo">Condo</option>
-        <option value="Multi-family">Multi-family</option>
-        <option value="Investment">Investment</option>
-      </select>
+      <label for="qs-zip">or ZIP code</label>
+      <input id="qs-zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 70130" pattern="[0-9 ,]*">
     </div>
     <div class="field">
       <label for="qs-price">Max Price</label>
@@ -74,32 +68,31 @@
   var form = document.getElementById('mls-quicksearch');
   if (!form) return;
 
-  // Neighborhood + property-type filtering needs GSREIN area/type codes, which
-  // arrive with the live MLS feed (currently demo mode). Fill these maps then —
-  // each value is a Buying Buddy filter fragment (e.g. 'city:New Orleans').
-  // Until then, those selections pass through harmlessly and only price filters.
-  var NBHD_CODES = {
-    // 'Garden District': 'subdivision:...',
-  };
-  var TYPE_CODES = {
-    // 'Single-family': 'property_type:...',
-  };
+  // Same neighborhood -> ZIP set the server helper uses (single source of truth).
+  var HOOD_ZIPS = <?php echo wp_json_encode(nops_nola_hood_zips()); ?>;
+  var RESULTS = form.dataset.resultsUrl;
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    var parts = [];
-    var price = form.querySelector('#qs-price').value;   // already 'price_max:NNNN'
-    var nbhd  = form.querySelector('#qs-nbhd').value;
-    var type  = form.querySelector('#qs-type').value;
-    if (price) parts.push(price);
-    if (nbhd && NBHD_CODES[nbhd]) parts.push(NBHD_CODES[nbhd]);
-    if (type && TYPE_CODES[type]) parts.push(TYPE_CODES[type]);
+    var zips = [];
+    // Neighborhood -> its ZIP set
+    var nbhd = form.querySelector('#qs-nbhd').value;
+    if (nbhd && HOOD_ZIPS[nbhd]) zips = zips.concat(HOOD_ZIPS[nbhd]);
+    // Direct ZIP entry (accepts "70130", "70115 70118", "70115,70118")
+    var typed = (form.querySelector('#qs-zip').value.match(/\d{5}/g)) || [];
+    zips = zips.concat(typed);
+    zips = zips.filter(function (z, i) { return zips.indexOf(z) === i; }); // dedupe
 
-    // "Search MLS" always lands on the ListingResults grid (the only page that
-    // reads ?filter=). With criteria we append the filter; with none we still
-    // show the results grid rather than bouncing back to an empty search form.
-    var base = form.dataset.resultsUrl;
-    window.location.href = parts.length ? base + '?filter=' + parts.join('+') : base;
+    var params = {};
+    if (zips.length) params.zip_code = zips.join(',');
+    var price = form.querySelector('#qs-price').value; // 'price_max:NNNN' or 'price_min:NNNN'
+    if (price) { var p = price.split(':'); params[p[0]] = p[1]; }
+
+    var keys = Object.keys(params);
+    if (!keys.length) { window.location.href = RESULTS; return; } // browse all
+    var qs = ['data-filter=bb', 'mls_id=la248'];
+    keys.forEach(function (k) { qs.push(encodeURIComponent(k) + '=' + encodeURIComponent(params[k])); });
+    window.location.href = RESULTS + '?' + qs.join('&');
   });
 })();
 </script>
