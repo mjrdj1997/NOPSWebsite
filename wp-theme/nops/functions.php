@@ -453,6 +453,38 @@ function nops_search_bar($wrap = true) {
         <input id="qs-zip" name="zip" type="text" inputmode="numeric" autocomplete="postal-code" placeholder="e.g. 70130" pattern="[0-9 ,]*">
       </div>
       <div class="field">
+        <label for="qs-type">Type</label>
+        <?php // values are real GSREIN property_subtype strings (from the live BB feed) ?>
+        <select id="qs-type" name="ptype">
+          <option value="">All homes</option>
+          <option value="single family residence">Single-Family</option>
+          <option value="condominium">Condo</option>
+          <option value="townhouse">Townhouse</option>
+          <option value="duplex,triplex,quadruplex">Multi-Family</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qs-beds">Beds</label>
+        <select id="qs-beds" name="beds">
+          <option value="">Any</option>
+          <option value="1">1+</option>
+          <option value="2">2+</option>
+          <option value="3">3+</option>
+          <option value="4">4+</option>
+          <option value="5">5+</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qs-baths">Baths</label>
+        <select id="qs-baths" name="baths">
+          <option value="">Any</option>
+          <option value="1">1+</option>
+          <option value="2">2+</option>
+          <option value="3">3+</option>
+          <option value="4">4+</option>
+        </select>
+      </div>
+      <div class="field">
         <label for="qs-price">Max Price</label>
         <select id="qs-price" name="price">
           <option value="">No max</option>
@@ -481,6 +513,12 @@ function nops_search_bar($wrap = true) {
         zips = zips.filter(function (z, i) { return zips.indexOf(z) === i; });
         var params = {};
         if (zips.length) params.zip_code = zips.join(',');
+        var type = form.querySelector('#qs-type').value;
+        if (type) params.property_subtype = type;
+        var beds = form.querySelector('#qs-beds').value;
+        if (beds) params.bedrooms_total_min = beds;
+        var baths = form.querySelector('#qs-baths').value;
+        if (baths) params.baths_total_min = baths;
         var price = form.querySelector('#qs-price').value;
         if (price) { var p = price.split(':'); params[p[0]] = p[1]; }
         var keys = Object.keys(params);
