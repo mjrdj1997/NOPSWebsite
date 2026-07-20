@@ -12,10 +12,12 @@ $slug = get_queried_object()->post_name;
 $imgmap = [
     'garden-district-homes-for-sale' => 'gardendistrict-nops.jpg',
     'uptown-homes-for-sale'          => 'uptown-nops.jpg',
+    'french-quarter-homes-for-sale'  => 'french-quarter-nops.jpg',
     'marigny-homes-for-sale'         => 'marigny-nops.jpg',
     'bywater-homes-for-sale'         => 'bywater-cottage.jpg',
     'lakeview-homes-for-sale'        => 'lakeview-nops.jpg',
     'mid-city-homes-for-sale'        => 'midcity-nops.jpg',
+    'irish-channel-homes-for-sale'   => 'shotgun-01.jpg',
 ];
 $imgfile = isset($imgmap[$slug]) ? $imgmap[$slug] : 'gd-2008.jpg';
 $img  = get_theme_file_uri('assets/nola/' . $imgfile);
@@ -27,10 +29,12 @@ $name = get_the_title();
 $hoodmap = [
     'garden-district-homes-for-sale' => 'Garden District',
     'uptown-homes-for-sale'          => 'Uptown',
+    'french-quarter-homes-for-sale'  => 'French Quarter',
     'marigny-homes-for-sale'         => 'Marigny',
     'bywater-homes-for-sale'         => 'Bywater',
     'lakeview-homes-for-sale'        => 'Lakeview',
     'mid-city-homes-for-sale'        => 'Mid-City',
+    'irish-channel-homes-for-sale'   => 'Irish Channel',
 ];
 $hood_zips = isset($hoodmap[$slug]) ? nops_hood_to_zips($hoodmap[$slug]) : [];
 $search_url = $hood_zips
