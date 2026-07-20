@@ -347,7 +347,17 @@ textarea{resize:vertical;min-height:130px}
 /* ---- Funnel visitors through the NOPS search: hide Buying Buddy's native
    search UI (standalone SearchForm + the "refine" bar on the results grid).
    Our bar is injected above the content on those pages (see functions.php). ---- */
+/* Hide ALL Buying Buddy search/refine/header chrome on the IDX pages so visitors
+   use only our bar. Keep the actual listings (mbb-results / mbb-galleryitem /
+   mbb-listitem / mbb-resultsmap are intentionally NOT listed here). */
 #MBBv3_SearchForm,
-mbb-filter,
-#MBBv3_ListingResults form[refine-search]{ display:none !important; }
+#MBBv3_ListingResults form[refine-search],
+mbb-results-header,
+mbb-search-form,
+mbb-search-form-nls,
+mbb-quick-search,
+mbb-areasearch,
+mbb-search-criteria,
+mbb-criteria-badge,
+mbb-filter{ display:none !important; }
 .idx-quicksearch{ margin:0 0 34px }
