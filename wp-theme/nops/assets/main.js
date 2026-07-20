@@ -10,6 +10,11 @@
     });
     nav.querySelectorAll('a').forEach(function (a) {
       a.addEventListener('click', function () {
+        // Snap the drawer shut with NO animation before we navigate away.
+        // Mobile browsers hold the outgoing page's last painted frame until
+        // the next page is ready; a slide-out mid-transition froze a half-open
+        // drawer + dim backdrop on screen — the "blank overlay" flash.
+        nav.style.transition = 'none';
         nav.classList.remove('open');
         toggle.classList.remove('open');
       });

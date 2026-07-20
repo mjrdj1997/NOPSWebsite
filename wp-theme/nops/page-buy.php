@@ -7,14 +7,9 @@
   <p class="lead">From your first tour to the closing table, we help you find — and win — the right New Orleans home with clear-eyed local guidance.</p>
 </div></section>
 
-<!-- Search -->
-<div class="container">
-  <form class="searchbar" data-demo style="margin-top:-36px">
-    <div class="field"><label>Neighborhood</label><select><option>Any area</option><option>Garden District</option><option>Uptown</option><option>French Quarter</option><option>Marigny / Bywater</option><option>Lakeview</option><option>Mid-City</option></select></div>
-    <div class="field"><label>Type</label><select><option>All homes</option><option>Single-family</option><option>Historic / Creole</option><option>Condo</option><option>Multi-family</option></select></div>
-    <div class="field"><label>Max Price</label><select><option>No max</option><option>$400k</option><option>$600k</option><option>$800k</option><option>$1M+</option></select></div>
-    <button class="btn btn--gold" type="submit">Search MLS</button>
-  </form>
+<!-- Search — real Buying Buddy / MLS quick search (same as homepage) -->
+<div class="container" style="margin-top:-36px">
+  <?php nops_search_bar(false); ?>
 </div>
 
 
