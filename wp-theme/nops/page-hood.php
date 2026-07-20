@@ -20,6 +20,22 @@ $imgmap = [
 $imgfile = isset($imgmap[$slug]) ? $imgmap[$slug] : 'gd-2008.jpg';
 $img  = get_theme_file_uri('assets/nola/' . $imgfile);
 $name = get_the_title();
+
+// Map each landing page to the canonical neighborhood key so the "Search
+// listings" button lands on ZIP-filtered results (matching the homepage/Buy
+// quick-search), not a blank search form.
+$hoodmap = [
+    'garden-district-homes-for-sale' => 'Garden District',
+    'uptown-homes-for-sale'          => 'Uptown',
+    'marigny-homes-for-sale'         => 'Marigny',
+    'bywater-homes-for-sale'         => 'Bywater',
+    'lakeview-homes-for-sale'        => 'Lakeview',
+    'mid-city-homes-for-sale'        => 'Mid-City',
+];
+$hood_zips = isset($hoodmap[$slug]) ? nops_hood_to_zips($hoodmap[$slug]) : [];
+$search_url = $hood_zips
+    ? nops_listing_url(['zip_code' => implode(',', $hood_zips)])
+    : nops_listing_url();
 ?>
 <section class="page-hero"><div class="container">
   <div class="crumbs"><a href="<?php echo esc_url(home_url('/')); ?>">Home</a> / <a href="<?php echo esc_url(home_url('/communities/')); ?>">Communities</a> / <?php echo esc_html($name); ?></div>
@@ -32,7 +48,7 @@ $name = get_the_title();
   <?php while (have_posts()) : the_post(); the_content(); endwhile; ?>
 
   <div style="display:flex;flex-wrap:wrap;gap:12px;margin:34px 0 8px">
-    <a class="btn btn--gold" href="<?php echo esc_url(nops_listing_url()); ?>" style="color:#fff">Search <?php echo esc_html($name); ?> listings</a>
+    <a class="btn btn--gold" href="<?php echo esc_url($search_url); ?>" style="color:#fff">Search <?php echo esc_html($name); ?> listings</a>
     <a class="btn btn--ghost" href="<?php echo esc_url(home_url('/')); ?>#ai-concierge">Ask the AI concierge</a>
   </div>
   <p style="color:var(--muted);margin-top:20px">Thinking about buying or selling in <?php echo esc_html($name); ?>? <a href="<?php echo esc_url(home_url('/contact/')); ?>">Talk with Kari</a> — you'll work directly with a local broker who knows the neighborhood.</p>
