@@ -457,9 +457,9 @@ function nops_search_bar($wrap = true) {
         <?php // values are real GSREIN property_subtype strings (from the live BB feed) ?>
         <select id="qs-type" name="ptype">
           <option value="">All homes</option>
-          <option value="single family residence">Single-Family</option>
+          <option value="detached,single family residence">Single-Family</option>
           <option value="condominium">Condo</option>
-          <option value="townhouse">Townhouse</option>
+          <option value="townhouse,attached">Townhouse</option>
           <option value="duplex,triplex,quadruplex">Multi-Family</option>
         </select>
       </div>
