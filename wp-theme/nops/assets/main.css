@@ -348,5 +348,6 @@ textarea{resize:vertical;min-height:130px}
    search UI (standalone SearchForm + the "refine" bar on the results grid).
    Our bar is injected above the content on those pages (see functions.php). ---- */
 #MBBv3_SearchForm,
+mbb-filter,
 #MBBv3_ListingResults form[refine-search]{ display:none !important; }
 .idx-quicksearch{ margin:0 0 34px }
