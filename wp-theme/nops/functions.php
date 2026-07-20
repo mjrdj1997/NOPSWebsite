@@ -549,6 +549,50 @@ function nops_inject_search_on_idx_pages($content) {
     return ob_get_clean() . $content;
 }
 
+/**
+ * Buying Buddy renders its widgets inside OPEN Shadow DOM, so the theme stylesheet
+ * cannot reach its search/refine/header chrome (that's why CSS alone never hid it).
+ * On the IDX pages, pierce every open shadow root and inject a hide-style into it,
+ * re-applying after BB's async renders. Listings (mbb-results / mbb-galleryitem /
+ * mbb-listitem / mbb-resultsmap) are deliberately NOT hidden.
+ */
+add_action('wp_footer', 'nops_hide_bb_chrome_script', 99);
+function nops_hide_bb_chrome_script() {
+    if (!is_page(['listing-search', 'listing-results'])) return;
+    ?>
+    <script>
+    (function () {
+      var HIDE = [
+        '#MBBv3_SearchForm', 'form[refine-search]', 'mbb-results-header', 'mbb-search-form',
+        'mbb-search-form-nls', 'mbb-quick-search', 'mbb-areasearch', 'mbb-search-criteria',
+        'mbb-criteria-badge', 'mbb-filter'
+      ].join(',') + '{display:none !important;}';
+
+      function ensureStyle(root) {
+        var host = (root === document) ? document.head : root;
+        if (!host || !host.querySelector) return;
+        if (host.querySelector('style[data-nops-hide]')) return; // still present after re-render
+        var s = document.createElement('style');
+        s.setAttribute('data-nops-hide', '1');
+        s.textContent = HIDE;
+        host.appendChild(s);
+      }
+      function walk(node) {
+        var els = node.querySelectorAll ? node.querySelectorAll('*') : [];
+        for (var i = 0; i < els.length; i++) {
+          if (els[i].shadowRoot) { ensureStyle(els[i].shadowRoot); walk(els[i].shadowRoot); }
+        }
+      }
+      function run() { ensureStyle(document); walk(document); }
+
+      run();
+      var ticks = 0, iv = setInterval(function () { run(); if (++ticks > 50) clearInterval(iv); }, 300); // ~15s
+      try { new MutationObserver(run).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+    })();
+    </script>
+    <?php
+}
+
 /* ------------------------------------------------------------------
  * SEO: per-page meta description, canonical, Open Graph, Twitter card.
  * (WordPress core already outputs <title> via title-tag support.)
