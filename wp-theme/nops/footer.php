@@ -19,6 +19,16 @@
       <li><a href="<?php echo esc_url(home_url('/journal/')); ?>">Journal</a></li>
       <li><a href="<?php echo esc_url(home_url('/about/')); ?>">About Kari</a></li>
     </ul></div>
+    <div><h4>Neighborhoods</h4><ul class="footer-links footer-links--2col">
+      <li><a href="<?php echo esc_url(home_url('/garden-district-homes-for-sale/')); ?>">Garden District</a></li>
+      <li><a href="<?php echo esc_url(home_url('/uptown-homes-for-sale/')); ?>">Uptown</a></li>
+      <li><a href="<?php echo esc_url(home_url('/french-quarter-homes-for-sale/')); ?>">French Quarter</a></li>
+      <li><a href="<?php echo esc_url(home_url('/marigny-homes-for-sale/')); ?>">Marigny</a></li>
+      <li><a href="<?php echo esc_url(home_url('/bywater-homes-for-sale/')); ?>">Bywater</a></li>
+      <li><a href="<?php echo esc_url(home_url('/irish-channel-homes-for-sale/')); ?>">Irish Channel</a></li>
+      <li><a href="<?php echo esc_url(home_url('/lakeview-homes-for-sale/')); ?>">Lakeview</a></li>
+      <li><a href="<?php echo esc_url(home_url('/mid-city-homes-for-sale/')); ?>">Mid-City</a></li>
+    </ul></div>
     <div><h4>Services</h4><ul class="footer-links">
       <li><a href="<?php echo esc_url(home_url('/buy/')); ?>">Buyer Representation</a></li>
       <li><a href="<?php echo esc_url(home_url('/sell/')); ?>">Seller Representation</a></li>
