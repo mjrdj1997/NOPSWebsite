@@ -195,6 +195,24 @@ function nops_spam_signals($f) {
               . 'our (team|agency|company) (can|will|of)|affordable (price|rates?)|portfolio)\b/i';
     if (preg_match($site_ref, $msg) && preg_match($pitch, $msg)) $out['solicitation'] = 4;
 
+    // Blasted at realtors from a mail-merge with the wrong name filled in
+    // ("Hi Gaynell!", "Good evening, Jessica."). A real client writes "Hi Kari",
+    // "Hello," or nothing at all. The trailing punctuation check is what keeps
+    // "Hi, My name is Bob" out of this.
+    if (preg_match('/\b(?:hi|hello|hey|dear|good\s+(?:morning|afternoon|evening))[,\s]+([A-Z][a-z]{2,15})\s*[!,.\r\n]/', $msg, $g)) {
+        $ours = ['kari', 'ayala', 'there', 'team', 'all', 'folks', 'everyone', 'sir', 'madam', 'friend'];
+        if (!in_array(strtolower($g[1]), $ours, true)) $out['wrong-name'] = 5;
+    }
+
+    // "Contact him directly instead" — a second, different address buried in the
+    // body. Weighted so it needs corroboration: a real client copying a spouse
+    // is legitimate and still gets through.
+    if (preg_match_all('/[\w.+-]+@[\w-]+\.[\w.]+/', $msg, $em)) {
+        foreach ($em[0] as $found) {
+            if (strcasecmp(trim($found), trim($f['email'] ?? '')) !== 0) { $out['other-address'] = 3; break; }
+        }
+    }
+
     // Review-manipulation pitches — spam on their own, and the service itself is
     // fraud that can get a real business profile suspended.
     $reviews = '/\b(remove (negative|bad) reviews?|boost your (rating|reviews?)|buy reviews?|'
@@ -239,18 +257,20 @@ function nops_handle_contact() {
     // Flood control: over the limit is dropped outright (not even stored).
     if (nops_contact_rate_exceeded($ip)) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
 
-    $first    = sanitize_text_field($_POST['first_name'] ?? '');
-    $last     = sanitize_text_field($_POST['last_name'] ?? '');
-    $email    = sanitize_email($_POST['email'] ?? '');
-    $phone    = sanitize_text_field($_POST['phone'] ?? '');
-    $interest = sanitize_text_field($_POST['interest'] ?? '');
-    $message  = sanitize_textarea_field($_POST['message'] ?? '');
+    // wp_unslash first: WordPress slash-escapes $_POST, so without it every
+    // apostrophe reaches Kari as "Thomas\'s".
+    $first    = sanitize_text_field(wp_unslash($_POST['first_name'] ?? ''));
+    $last     = sanitize_text_field(wp_unslash($_POST['last_name'] ?? ''));
+    $email    = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+    $phone    = sanitize_text_field(wp_unslash($_POST['phone'] ?? ''));
+    $interest = sanitize_text_field(wp_unslash($_POST['interest'] ?? ''));
+    $message  = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
     $name     = trim("$first $last");
     if ($name === '' || !is_email($email)) { wp_safe_redirect(home_url('/contact/?err=1')); exit; }
 
     // Score it: bad/replayed form tokens count as a strong signal too.
     $signals = array_merge(
-        nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'message' => $message]),
+        nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'email' => $email, 'message' => $message]),
         nops_repeat_signals($email, $message)
     );
     $problem = nops_form_token_problem();
