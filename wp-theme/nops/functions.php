@@ -116,11 +116,6 @@ add_action('init', 'nops_register_inquiry_cpt');
  * to Kari and NO auto-reply to the submitted address — auto-replying to a
  * forged address is backscatter and damages the sending domain's reputation.
  * ------------------------------------------------------------------ */
-function nops_client_ip() {
-    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
-    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
-}
-
 function nops_form_token_hash($t) {
     return hash_hmac('sha256', 'nops_contact|' . $t, wp_salt('nonce'));
 }
@@ -309,12 +304,14 @@ add_action('rest_api_init', function () {
     ]);
 });
 
+/**
+ * Apache serves this site directly — there is no trusted proxy in front of it,
+ * so X-Forwarded-For is attacker-controlled and must NOT be honoured: a bot
+ * could rotate that header to walk straight past every per-IP rate limit.
+ */
 function nops_client_ip() {
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $parts = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return trim($parts[0]);
-    }
-    return $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
 }
 
 function nops_concierge_handler(WP_REST_Request $req) {
