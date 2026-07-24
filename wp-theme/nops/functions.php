@@ -561,6 +561,82 @@ function nops_listing_url($fields = []) {
     return home_url('/listing-results/') . '?' . http_build_query($query);
 }
 
+/* ------------------------------------------------------------------
+ * Redirects from the old iHOUSEweb site.
+ *
+ * Those addresses are still being followed nine days after launch — an Advocate
+ * placement, old search results, bookmarks — and every one of them was landing
+ * on a 404. Each rule aims at the closest live equivalent: a 301 to something
+ * irrelevant is a soft 404 to a visitor and to Google alike, so an old listing
+ * lands on that ZIP's live results rather than on the homepage.
+ * ------------------------------------------------------------------ */
+
+/** Every ZIP the neighborhood map knows, so a stray number can't pose as one. */
+function nops_known_zips() {
+    $zips = [];
+    foreach (nops_nola_hood_zips() as $set) { $zips = array_merge($zips, $set); }
+    return array_unique($zips);
+}
+
+/** Old neighborhood slug ("irish-channel") -> its landing page, or ZIP results. */
+function nops_legacy_hood_url($slug) {
+    $page = get_page_by_path($slug . '-homes-for-sale');
+    if ($page) return get_permalink($page);
+    $zips = nops_hood_to_zips(ucwords(str_replace('-', ' ', $slug)));
+    if ($zips) return nops_listing_url(['zip_code' => implode(',', $zips)]);
+    return '';
+}
+
+function nops_legacy_redirects() {
+    if (!is_404()) return;                       // never intercept a live URL
+    $path = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH);
+    $path = strtolower(trim((string) $path, '/'));
+    if ($path === '') return;
+
+    $to = '';
+
+    // /homes-for-sale-in-irish-channel-new-orleans-la, and the luxury- variant.
+    if (preg_match('#^(?:luxury-)?homes-for-sale-in-(.+?)-new-orleans-la$#', $path, $m)) {
+        $to = nops_legacy_hood_url($m[1]);
+        if (!$to) $to = home_url('/buy/');
+
+    // A single old listing, in any of the four shapes the old site used:
+    //   /idx/listing/LA-NOMAR/2542589/815-N-Robertson-Street-New-Orleans-LA-70116
+    //   /idx/mls-948263-822_harmony_st_new_orleans_la_70115
+    //   /-/listing/LA-NOMAR/2547684/5533-Atlanta-Street-...
+    //   /mls/mls_802999/
+    } elseif (preg_match('#(^|/)(idx/listing|idx/mls-|-/listing|mls/mls_)#', $path)) {
+        // The slug usually ends in the property's ZIP. Trust it only if it is a
+        // ZIP we actually know — an MLS number can contain a 70xxx run by chance.
+        $to = home_url('/buy/');
+        if (preg_match('#(70\d{3})[^0-9]*$#', $path, $z)
+            && in_array($z[1], nops_known_zips(), true)) {
+            $to = nops_listing_url(['zip_code' => $z[1]]);
+        }
+
+    // Old browse and search screens.
+    } elseif (preg_match('#^(idx/city|idx/search|idx/listing/featured|featured-listings|-/ajaxsearch)#', $path)) {
+        $to = home_url('/buy/');
+
+    } else {
+        $simple = [
+            'contact-us'     => '/contact/',
+            'about-us'       => '/about/',
+            'blog'           => '/journal/',
+            'amp/blog'       => '/journal/',
+            'news'           => '/journal/',
+            'buyers'         => '/buy/',
+            'sellers'        => '/sell/',
+            'sell-your-home' => '/sell/',
+            'sitemap.xml'    => '/wp-sitemap.xml',
+        ];
+        if (isset($simple[$path])) $to = home_url($simple[$path]);
+    }
+
+    if ($to) { wp_redirect($to, 301); exit; }
+}
+add_action('template_redirect', 'nops_legacy_redirects');
+
 function nops_concierge_search_url($c) {
     $f = [];
     if (!empty($c['price_min'])) $f['price_min']          = (int) $c['price_min'];
