@@ -103,12 +103,106 @@ function nops_register_inquiry_cpt() {
 }
 add_action('init', 'nops_register_inquiry_cpt');
 
+/* ------------------------------------------------------------------
+ * Contact-form anti-spam. Layered, no third-party service required:
+ *   1. honeypot            — naive bots
+ *   2. signed form token   — instant submits, day-old replayed forms, and
+ *                            re-posting one page load over and over
+ *   3. per-IP rate limit   — turns a flood into at most a trickle
+ *   4. content scoring     — link spam, non-English blasts, and the
+ *                            "ChristophervenGM"-style generated names
+ * A submission that scores as spam is still SAVED to Inquiries (title
+ * prefixed [SPAM]) so a false positive is never lost, but it sends NO email
+ * to Kari and NO auto-reply to the submitted address — auto-replying to a
+ * forged address is backscatter and damages the sending domain's reputation.
+ * ------------------------------------------------------------------ */
+function nops_client_ip() {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    return filter_var($ip, FILTER_VALIDATE_IP) ? $ip : '0.0.0.0';
+}
+
+function nops_form_token_hash($t) {
+    return hash_hmac('sha256', 'nops_contact|' . $t, wp_salt('nonce'));
+}
+
+/** Hidden fields stamping when this form was rendered. Echo inside every form. */
+function nops_form_token_fields() {
+    $t = time();
+    return '<input type="hidden" name="nops_t" value="' . esc_attr($t) . '">'
+         . '<input type="hidden" name="nops_k" value="' . esc_attr(nops_form_token_hash($t)) . '">';
+}
+
+/** '' when the token is good, otherwise a short reason. Counts each use. */
+function nops_form_token_problem() {
+    $t = isset($_POST['nops_t']) ? absint($_POST['nops_t']) : 0;
+    $k = isset($_POST['nops_k']) ? sanitize_text_field(wp_unslash($_POST['nops_k'])) : '';
+    if (!$t || !$k || !hash_equals(nops_form_token_hash($t), $k)) return 'bad-token';
+    $age = time() - $t;
+    if ($age < 4) return 'too-fast';                       // no human fills this in 4s
+    if ($age > 12 * HOUR_IN_SECONDS) return 'stale-form';
+    $key  = 'nops_tok_' . md5($k);
+    $used = (int) get_transient($key);
+    if ($used >= 3) return 'token-reuse';                  // one page load, many posts
+    set_transient($key, $used + 1, 12 * HOUR_IN_SECONDS);
+    return '';
+}
+
+/** True once this IP passes 3 submissions an hour or 8 a day. */
+function nops_contact_rate_exceeded($ip) {
+    $hk = 'nops_cf_h_' . md5($ip);
+    $dk = 'nops_cf_d_' . md5($ip);
+    $h  = (int) get_transient($hk);
+    $d  = (int) get_transient($dk);
+    if ($h >= 3 || $d >= 8) return true;
+    set_transient($hk, $h + 1, HOUR_IN_SECONDS);
+    set_transient($dk, $d + 1, DAY_IN_SECONDS);
+    return false;
+}
+
+/** Weighted spam signals for one submission. Total >= 4 is treated as spam. */
+function nops_spam_signals($f) {
+    $out  = [];
+    $name = $f['name'];
+    $msg  = $f['message'];
+    $blob = $name . ' ' . $msg;
+
+    // Real inquiries almost never contain links; spam almost always does.
+    $links = preg_match_all('#(https?://|www\.)#i', $msg);
+    if ($links >= 1) $out['links'] = 3;
+    if ($links >= 3) $out['many-links'] = 3;
+    if (preg_match('#\[url|\[/url\]|<a\s|</a>#i', $blob)) $out['markup'] = 4;
+
+    // Generated names: "ChristophervenGM", "JosephTycleZG".
+    if (preg_match('/[a-z]{2}[A-Z]{2}/', $name)) $out['name-pattern'] = 5;
+    if ($f['first'] !== '' && strcasecmp($f['first'], $f['last']) === 0) $out['name-repeat'] = 2;
+
+    // Blasts in another language/script — Kari's market writes in English.
+    $chars = function_exists('mb_strlen') ? mb_strlen($msg, 'UTF-8') : strlen($msg);
+    if ($chars >= 10) {
+        $ascii = strlen(preg_replace('/[^\x00-\x7F]/u', '', $msg));
+        if (($chars - $ascii) / $chars > 0.08) $out['non-english'] = 4;
+    }
+
+    $spammy = '/\b(seo services?|backlinks?|link building|guest post|sponsored post|write for us|'
+            . 'crypto(currency)?|bitcoin|casino|viagra|escort|web visitors into leads|'
+            . 'ericjonesmyemail|blastleadgeneration|rank your (web)?site|increase your traffic|'
+            . 'digital marketing agency|telegram)\b/i';
+    if (preg_match($spammy, $blob)) $out['spam-phrase'] = 4;
+
+    return $out;
+}
+
 function nops_handle_contact() {
+    $ip = nops_client_ip();
+
     // Honeypot: silently accept bots without doing anything.
     if (!empty($_POST['nops_website'])) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
     if (!isset($_POST['nops_nonce']) || !wp_verify_nonce($_POST['nops_nonce'], 'nops_contact')) {
         wp_safe_redirect(home_url('/contact/?err=1')); exit;
     }
+    // Flood control: over the limit is dropped outright (not even stored).
+    if (nops_contact_rate_exceeded($ip)) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
+
     $first    = sanitize_text_field($_POST['first_name'] ?? '');
     $last     = sanitize_text_field($_POST['last_name'] ?? '');
     $email    = sanitize_email($_POST['email'] ?? '');
@@ -118,17 +212,34 @@ function nops_handle_contact() {
     $name     = trim("$first $last");
     if ($name === '' || !is_email($email)) { wp_safe_redirect(home_url('/contact/?err=1')); exit; }
 
+    // Score it: bad/replayed form tokens count as a strong signal too.
+    $signals = nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'message' => $message]);
+    $problem = nops_form_token_problem();
+    if ($problem !== '') $signals[$problem] = 5;
+    $score   = array_sum($signals);
+    $is_spam = $score >= 4;
+
     $body = "New website inquiry\n\n"
           . "Name: $name\nEmail: $email\nPhone: $phone\nInterested in: $interest\n\n"
           . "Message:\n$message\n";
 
-    // Persist a copy in wp-admin -> Inquiries.
+    // Persist a copy in wp-admin -> Inquiries (spam included, so nothing is lost).
     wp_insert_post([
         'post_type'    => 'nops_inquiry',
         'post_status'  => 'private',
-        'post_title'   => "$name — $interest",
-        'post_content' => $body,
+        'post_title'   => ($is_spam ? '[SPAM] ' : '') . "$name — $interest",
+        'post_content' => $is_spam
+            ? $body . "\n---\nFlagged as spam (score $score: " . implode(', ', array_keys($signals)) . ") from $ip.\nNo email was sent. If this is a real person, reply to them directly."
+            : $body,
+        'meta_input'   => [
+            '_nops_ip'      => $ip,
+            '_nops_score'   => $score,
+            '_nops_signals' => implode(', ', array_keys($signals)),
+        ],
     ]);
+
+    // Spam stops here: no notification, and no auto-reply to a forged address.
+    if ($is_spam) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
 
     // Email the owner (recipient filterable; defaults to the WP admin email).
     $to      = apply_filters('nops_contact_recipient', get_option('admin_email'));

@@ -46,6 +46,7 @@
         <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post">
           <input type="hidden" name="action" value="nops_contact">
           <?php wp_nonce_field('nops_contact', 'nops_nonce'); ?>
+          <?php echo nops_form_token_fields(); ?>
           <div style="position:absolute;left:-9999px" aria-hidden="true"><label>Leave this blank<input type="text" name="nops_website" tabindex="-1" autocomplete="off"></label></div>
           <div class="form-row">
             <div><label class="fl">First name</label><input type="text" name="first_name" required placeholder="Jane"></div>

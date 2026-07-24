@@ -97,7 +97,9 @@
     endpoint:  <?php echo wp_json_encode( esc_url_raw( rest_url('nops/v1/concierge') ) ); ?>,
     nonce:     <?php echo wp_json_encode( wp_create_nonce('wp_rest') ); ?>,
     leadUrl:   <?php echo wp_json_encode( esc_url_raw( admin_url('admin-post.php') ) ); ?>,
-    leadNonce: <?php echo wp_json_encode( wp_create_nonce('nops_contact') ); ?>
+    leadNonce: <?php echo wp_json_encode( wp_create_nonce('nops_contact') ); ?>,
+    leadT:     <?php echo wp_json_encode( (string) ( $nops_lead_t = time() ) ); ?>,
+    leadK:     <?php echo wp_json_encode( nops_form_token_hash( $nops_lead_t ) ); ?>
   };
   var form=document.getElementById('conc-form'); if(!form) return;
   var q=document.getElementById('conc-q'), hp=document.getElementById('conc-hp'),
@@ -179,6 +181,7 @@
       var msg='AI Concierge request:\n\n"'+lastQuery+'"\n\nConcierge summary:\n'+lastSummary+'\n\nParsed criteria:\n'+JSON.stringify(lastCriteria,null,2);
       var fd=new FormData();
       fd.append('action','nops_contact'); fd.append('nops_nonce',cfg.leadNonce); fd.append('nops_website','');
+      fd.append('nops_t',cfg.leadT); fd.append('nops_k',cfg.leadK);
       fd.append('first_name',fn.value); fd.append('last_name',ln.value); fd.append('email',em.value); fd.append('phone',ph.value);
       fd.append('interest','AI Concierge — shortlist request'); fd.append('message',msg);
       fetch(cfg.leadUrl,{method:'POST',body:fd,redirect:'manual'})
