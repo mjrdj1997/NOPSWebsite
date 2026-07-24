@@ -199,7 +199,9 @@ function nops_spam_signals($f) {
     // ("Hi Gaynell!", "Good evening, Jessica."). A real client writes "Hi Kari",
     // "Hello," or nothing at all. The trailing punctuation check is what keeps
     // "Hi, My name is Bob" out of this.
-    if (preg_match('/\b(?:hi|hello|hey|dear|good\s+(?:morning|afternoon|evening))[,\s]+([A-Z][a-z]{2,15})\s*[!,.\r\n]/', $msg, $g)) {
+    // The greeting matches case-insensitively — (?i:…) — but the name stays
+    // case-sensitive, so only a capitalised name counts as a name.
+    if (preg_match('/\b(?i:hi|hello|hey|dear|good\s+(?:morning|afternoon|evening))[,\s]+([A-Z][a-z]{2,15})\s*[!,.\r\n]/', $msg, $g)) {
         $ours = ['kari', 'ayala', 'there', 'team', 'all', 'folks', 'everyone', 'sir', 'madam', 'friend'];
         if (!in_array(strtolower($g[1]), $ours, true)) $out['wrong-name'] = 5;
     }
