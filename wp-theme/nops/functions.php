@@ -184,6 +184,47 @@ function nops_spam_signals($f) {
             . 'digital marketing agency|telegram)\b/i';
     if (preg_match($spammy, $blob)) $out['spam-phrase'] = 4;
 
+    // Agency solicitations: plain English, no links, so nothing above catches them.
+    // Deliberately COMPOUND — the message has to mention the site AND talk vendor
+    // shop about it. "I saw a house on your website" stays clean; "your website
+    // could get more enquiries with a modern design" does not.
+    $site_ref = '/\b(web ?sites?|web ?pages?|your site|online presence|google (maps|business|listing))\b/i';
+    $pitch    = '/\b(re-?design(ing|ed)?|mock-?up|modern design|web development|web design|'
+              . 'convert (better|more)|more (leads|enquir|inquir|traffic|visitors)|'
+              . 'rank(ing)? (higher|on google)|first page of google|seo|search engine optimi[sz]ation|'
+              . 'our (team|agency|company) (can|will|of)|affordable (price|rates?)|portfolio)\b/i';
+    if (preg_match($site_ref, $msg) && preg_match($pitch, $msg)) $out['solicitation'] = 4;
+
+    // Review-manipulation pitches — spam on their own, and the service itself is
+    // fraud that can get a real business profile suspended.
+    $reviews = '/\b(remove (negative|bad) reviews?|boost your (rating|reviews?)|buy reviews?|'
+             . '5[- ]star reviews?|positive reviews? (for|to))\b/i';
+    if (preg_match($reviews, $msg)) $out['review-scam'] = 5;
+
+    return $out;
+}
+
+/**
+ * Repeat-submission signals. Stateful — remembers senders for 24h.
+ * A genuine follow-up ("forgot to mention…") must still reach Kari, so a second
+ * message alone is only a nudge; it takes a third, or an exact re-send, to
+ * quarantine.
+ */
+function nops_repeat_signals($email, $message) {
+    $out   = [];
+    $norm  = preg_replace('/\s+/', ' ', strtolower(trim($message)));
+    $ehash = md5(strtolower($email));
+    $ekey  = 'nops_em_' . $ehash;
+    $dkey  = 'nops_dup_' . md5($ehash . '|' . $norm);
+
+    if (get_transient($dkey))                      $out['duplicate']      = 5;  // same message twice
+    if (get_transient('nops_spamer_' . $ehash))    $out['known-spammer']  = 5;  // already flagged today
+    $n = (int) get_transient($ekey);
+    if ($n >= 2)      $out['repeat-sender']   = 5;                              // third+ in 24h
+    elseif ($n === 1) $out['second-message']  = 2;                              // not enough on its own
+
+    set_transient($dkey, 1, DAY_IN_SECONDS);
+    set_transient($ekey, $n + 1, DAY_IN_SECONDS);
     return $out;
 }
 
@@ -208,11 +249,17 @@ function nops_handle_contact() {
     if ($name === '' || !is_email($email)) { wp_safe_redirect(home_url('/contact/?err=1')); exit; }
 
     // Score it: bad/replayed form tokens count as a strong signal too.
-    $signals = nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'message' => $message]);
+    $signals = array_merge(
+        nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'message' => $message]),
+        nops_repeat_signals($email, $message)
+    );
     $problem = nops_form_token_problem();
     if ($problem !== '') $signals[$problem] = 5;
     $score   = array_sum($signals);
     $is_spam = $score >= 4;
+
+    // Once someone is flagged, their follow-ups today are flagged too.
+    if ($is_spam) set_transient('nops_spamer_' . md5(strtolower($email)), 1, DAY_IN_SECONDS);
 
     $body = "New website inquiry\n\n"
           . "Name: $name\nEmail: $email\nPhone: $phone\nInterested in: $interest\n\n"
