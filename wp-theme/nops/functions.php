@@ -584,6 +584,30 @@ function nops_listing_url($fields = []) {
 }
 
 /* ------------------------------------------------------------------
+ * Username enumeration.
+ *
+ * WordPress publishes the admin's login name in two places by default:
+ * /?author=1 redirects to /author/<login>/, and /wp-json/wp/v2/users lists it.
+ * That is how a brute force knows what name to try — and this site was taking
+ * thousands of login attempts. There is one author here and no author archives
+ * in the design, so both can simply go away for logged-out visitors.
+ * ------------------------------------------------------------------ */
+function nops_block_user_enumeration() {
+    if (is_admin() || is_user_logged_in()) return;
+    if (isset($_GET['author']) || is_author()) {
+        wp_safe_redirect(home_url('/'), 301);
+        exit;
+    }
+}
+add_action('template_redirect', 'nops_block_user_enumeration', 1);
+
+add_filter('rest_endpoints', function ($endpoints) {
+    if (is_user_logged_in()) return $endpoints;   // the editor still needs these
+    unset($endpoints['/wp/v2/users'], $endpoints['/wp/v2/users/(?P<id>[\d]+)']);
+    return $endpoints;
+});
+
+/* ------------------------------------------------------------------
  * Redirects from the old iHOUSEweb site.
  *
  * Those addresses are still being followed nine days after launch — an Advocate
