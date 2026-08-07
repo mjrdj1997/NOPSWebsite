@@ -870,6 +870,136 @@ function nops_hide_bb_chrome_script() {
     <?php
 }
 
+/**
+ * Buying Buddy prints every timestamp at a FIXED UTC-6 offset (CST) and ignores
+ * daylight saving, so from March to November it shows open-house times one hour
+ * early. Verified 2026-08-07 on la248_2555086 (8605 Pontchartrain Blvd): the feed
+ * stores openhouse_dt "2026-08-09 17:00:00" UTC — 12:00pm CDT, matching GSREIN —
+ * but BB rendered "11:00am to 1:00pm". Their own "Listing Data last updated" stamp
+ * was off by the same hour, so it is the whole display layer, not one bad record.
+ * Nothing server-side can fix it: the HTML arrives pre-rendered from mbb2.com and
+ * the plugin exposes no timezone setting.
+ *
+ * So correct it in the browser. BB's own `openhouse="<UTC>"` attribute IS right, so
+ * we work out the true America/Chicago time from it and rewrite the printed range
+ * only when the two disagree. If BB ever fixes their end the delta computes to 0 and
+ * this does nothing — it cannot double-shift. That also makes it idempotent, so
+ * re-running after BB's async re-renders is safe.
+ */
+add_action('wp_footer', 'nops_fix_bb_openhouse_times', 99);
+function nops_fix_bb_openhouse_times() {
+    if (!is_page(['listing-details', 'listing-results'])) return;
+    ?>
+    <script>
+    (function () {
+      var TZ = 'America/Chicago';
+      // "11:00am to 1:00pm", and tolerating "11:00 A.M. - 1:00 P.M.".
+      // Groups: 1 h 2 m 3 gap 4 suffix | 5 separator | 6 h 7 m 8 gap 9 suffix
+      var SRC = '(\\d{1,2}):(\\d{2})(\\s*)([APap]\\.?[Mm]\\.?)' +
+                '(\\s*(?:to|through|until|[-–—])\\s*)' +
+                '(\\d{1,2}):(\\d{2})(\\s*)([APap]\\.?[Mm]\\.?)';
+      var RANGE = new RegExp(SRC), RANGE_G = new RegExp(SRC, 'g');
+      var OH_BOXES = '#OpenHouse, #OpenHouseAnnouncement, .bfg-openhouse-details';
+
+      function parseUtc(s) {
+        var m = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2})(?::(\d{2}))?/.exec(String(s || '').trim());
+        return m ? new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] || 0))) : null;
+      }
+      // Minutes past midnight for `d` as America/Chicago would show it (DST-aware).
+      function tzMinutes(d) {
+        var parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: TZ, hour: 'numeric', minute: 'numeric', hour12: false
+        }).formatToParts(d), h = 0, mi = 0;
+        for (var i = 0; i < parts.length; i++) {
+          if (parts[i].type === 'hour')   h  = parseInt(parts[i].value, 10);
+          if (parts[i].type === 'minute') mi = parseInt(parts[i].value, 10);
+        }
+        return (h % 24) * 60 + mi; // some engines report midnight as hour 24
+      }
+      function toMinutes(h, m, suffix) {
+        return ((h % 12) + (/^p/i.test(suffix) ? 12 : 0)) * 60 + m;
+      }
+      function hhmm(mins) {
+        var h = Math.floor(mins / 60) % 24, m = mins % 60;
+        return (h % 12 || 12) + ':' + (m < 10 ? '0' + m : m);
+      }
+      // Rebuild the am/pm token in whatever style the source used ("PM", "p.m." ...).
+      function suffixFor(mins, sample) {
+        var letter = (Math.floor(mins / 60) % 24) >= 12 ? 'p' : 'a', first = sample.charAt(0);
+        if (first === first.toUpperCase() && first !== first.toLowerCase()) letter = letter.toUpperCase();
+        return letter + sample.slice(1);
+      }
+      // document + every open shadow root (BB renders inside attachShadow({mode:'open'}))
+      function allRoots() {
+        var out = [document], i = 0;
+        while (i < out.length) {
+          var els = out[i++].querySelectorAll('*');
+          for (var j = 0; j < els.length; j++) if (els[j].shadowRoot) out.push(els[j].shadowRoot);
+        }
+        return out;
+      }
+      function timeTextNodes(roots) {
+        var found = [];
+        for (var i = 0; i < roots.length; i++) {
+          var boxes = roots[i].querySelectorAll(OH_BOXES);
+          for (var b = 0; b < boxes.length; b++) {
+            var walk = document.createTreeWalker(boxes[b], NodeFilter.SHOW_TEXT, null), n;
+            while ((n = walk.nextNode())) if (RANGE.test(n.nodeValue)) found.push(n);
+          }
+        }
+        return found;
+      }
+
+      function run() {
+        var roots = allRoots(), anchor = null, i;
+        for (i = 0; i < roots.length && !anchor; i++) anchor = roots[i].querySelector('[openhouse]');
+        if (!anchor) return;                                    // no open house on this listing
+        var utc = parseUtc(anchor.getAttribute('openhouse'));
+        if (!utc) return;
+
+        var nodes = timeTextNodes(roots);
+        if (!nodes.length) return;
+
+        // How far off is BB's printed time from the real Central time? The error is a
+        // single fixed offset across the page, so one delta corrects every range.
+        var shown = RANGE.exec(nodes[0].nodeValue);
+        var delta = tzMinutes(utc) - toMinutes(+shown[1], +shown[2], shown[4]);
+        delta = ((delta + 720) % 1440 + 1440) % 1440 - 720;     // wrap into +/-12h
+        // 0 means BB fixed it, or we already did. Anything large means we misread the
+        // page (or matched the wrong open house) — leave it alone rather than guess.
+        if (delta === 0 || Math.abs(delta) > 120) return;
+
+        for (i = 0; i < nodes.length; i++) {
+          nodes[i].nodeValue = nodes[i].nodeValue.replace(RANGE_G,
+            function (whole, sh, sm, sgap, ssuf, sep, eh, em, egap, esuf) {
+              var start = toMinutes(+sh, +sm, ssuf) + delta,
+                  end   = toMinutes(+eh, +em, esuf) + delta;
+              // Crossing midnight would also move the date printed next to this text,
+              // which we can't rewrite safely — leave those untouched.
+              if (start < 0 || start >= 1440 || end < 0 || end >= 1440) return whole;
+              return hhmm(start) + sgap + suffixFor(start, ssuf) + sep +
+                     hhmm(end)   + egap + suffixFor(end,   esuf);
+            });
+        }
+      }
+
+      var queued = false;
+      function schedule() {
+        if (queued) return;
+        queued = true;
+        setTimeout(function () { queued = false; try { run(); } catch (e) {} }, 0);
+      }
+
+      schedule();
+      // BB loads its widgets async and wipes shadowRoot.innerHTML on each render, so
+      // keep re-checking for a while. run() is a no-op once the times are right.
+      var ticks = 0, iv = setInterval(function () { schedule(); if (++ticks > 50) clearInterval(iv); }, 300);
+      try { new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+    })();
+    </script>
+    <?php
+}
+
 /* ------------------------------------------------------------------
  * SEO: per-page meta description, canonical, Open Graph, Twitter card.
  * (WordPress core already outputs <title> via title-tag support.)
