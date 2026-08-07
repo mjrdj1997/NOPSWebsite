@@ -888,7 +888,13 @@ function nops_hide_bb_chrome_script() {
  */
 add_action('wp_footer', 'nops_fix_bb_openhouse_times', 99);
 function nops_fix_bb_openhouse_times() {
-    if (!is_page(['listing-details', 'listing-results'])) return;
+    // Every page that can host a Buying Buddy widget. The script bails immediately on
+    // pages with no open house, so covering all of them costs nothing and removes
+    // "wrong page" as a way for this to silently stop working.
+    if (!is_front_page() &&
+        !is_page(['listing-details', 'listing-results', 'listing-search', 'listing-market'])) {
+        return;
+    }
     ?>
     <script>
     (function () {
@@ -950,8 +956,25 @@ function nops_fix_bb_openhouse_times() {
         return found;
       }
 
+      // A MutationObserver on document.documentElement does NOT see mutations inside a
+      // shadow root, which is exactly where BB re-renders — so observe every root we
+      // find, and re-check for new ones as BB creates them.
+      var watched = (typeof WeakSet === 'function') ? new WeakSet() : null, watchedList = [];
+      function watch(roots) {
+        for (var i = 0; i < roots.length; i++) {
+          var t = (roots[i] === document) ? document.documentElement : roots[i];
+          if (!t) continue;
+          if (watched ? watched.has(t) : watchedList.indexOf(t) > -1) continue;
+          if (watched) { watched.add(t); } else { watchedList.push(t); }
+          try {
+            new MutationObserver(schedule).observe(t, { childList: true, subtree: true, characterData: true });
+          } catch (e) {}
+        }
+      }
+
       function run() {
         var roots = allRoots(), anchor = null, i;
+        watch(roots);
         for (i = 0; i < roots.length && !anchor; i++) anchor = roots[i].querySelector('[openhouse]');
         if (!anchor) return;                                    // no open house on this listing
         var utc = parseUtc(anchor.getAttribute('openhouse'));
@@ -987,14 +1010,23 @@ function nops_fix_bb_openhouse_times() {
       function schedule() {
         if (queued) return;
         queued = true;
-        setTimeout(function () { queued = false; try { run(); } catch (e) {} }, 0);
+        setTimeout(function () { queued = false; try { run(); } catch (e) {} }, 50);
       }
 
       schedule();
-      // BB loads its widgets async and wipes shadowRoot.innerHTML on each render, so
-      // keep re-checking for a while. run() is a no-op once the times are right.
-      var ticks = 0, iv = setInterval(function () { schedule(); if (++ticks > 50) clearInterval(iv); }, 300);
-      try { new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true }); } catch (e) {}
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', schedule);
+      window.addEventListener('load', schedule);
+
+      // Sweep hard while BB is still building the page, then settle into a slow
+      // heartbeat for the rest of the visit. The heartbeat matters: visitors page
+      // through listings with BB's own "< 2 of 12960 >" navigation, which swaps the
+      // detail view in place — sometimes attaching shadow roots we have not observed
+      // yet, and attachShadow on its own fires no mutation. run() is a no-op whenever
+      // the times are already right, so this stays cheap.
+      var ticks = 0, fast = setInterval(function () {
+        schedule();
+        if (++ticks > 120) { clearInterval(fast); setInterval(schedule, 2000); }
+      }, 500);
     })();
     </script>
     <?php
