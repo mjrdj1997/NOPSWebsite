@@ -19,7 +19,8 @@
         <span class="post__cat"><?php echo get_the_category_list(', '); ?></span>
         <a href="<?php the_permalink(); ?>" class="post__title" style="display:block"><?php the_title(); ?></a>
         <p class="post__excerpt"><?php echo esc_html(wp_trim_words(get_the_excerpt(), 22)); ?></p>
-        <div class="post__meta"><span><?php echo esc_html(get_the_date()); ?></span><span class="post__read"><?php the_time('M j'); ?></span></div>
+        <?php $mins = max(1, (int) round(str_word_count(wp_strip_all_tags(get_the_content())) / 200)); ?>
+        <div class="post__meta"><span><?php echo esc_html(get_the_date()); ?></span><span class="post__read"><?php echo (int) $mins; ?> min read</span></div>
       </div>
     </article>
     <?php endwhile; ?>
