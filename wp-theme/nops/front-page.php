@@ -252,12 +252,12 @@
       <p class="lead center">A current snapshot of the New Orleans market.</p>
     </div>
     <div class="grid grid--4 reveal" style="margin-top:44px">
-      <div class="mstat"><div class="n">$354K</div><div class="l">Median Sale Price</div><div class="d up">5.7% YoY</div></div>
-      <div class="mstat"><div class="n">75</div><div class="l">Median Days on Market</div><div class="d dn">1 day faster</div></div>
-      <div class="mstat"><div class="n">$212</div><div class="l">Median $ / Sq Ft</div><div class="d dn">0.5% YoY</div></div>
-      <div class="mstat"><div class="n">1,072</div><div class="l">Homes Sold &middot; May</div><div class="d up">15% YoY</div></div>
+      <div class="mstat"><div class="n">$327K</div><div class="l">Median Sale Price</div><div class="d up">3.8% YoY</div></div>
+      <div class="mstat"><div class="n">70</div><div class="l">Median Days on Market</div><div class="d dn">14 days faster</div></div>
+      <div class="mstat"><div class="n">$178</div><div class="l">Median $ / Sq Ft</div><div class="d dn">3.5% YoY</div></div>
+      <div class="mstat"><div class="n">908</div><div class="l">Homes Sold &middot; September</div><div class="d dn">1.4% YoY</div></div>
     </div>
-    <p class="center" style="color:var(--muted);font-size:.82rem;margin-top:22px">New Orleans &middot; 3 months ending May 2026. Source: <a href="https://www.redfin.com/city/14233/LA/New-Orleans/housing-market" target="_blank" rel="noopener">Redfin</a>.</p>
+    <p class="center" style="color:var(--muted);font-size:.82rem;margin-top:22px">New Orleans &middot; 3 months ending September 2026. Source: <a href="https://www.redfin.com/city/14233/LA/New-Orleans/housing-market" target="_blank" rel="noopener">Redfin</a>.</p>
   </div>
 </section>
 
