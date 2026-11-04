@@ -1046,6 +1046,10 @@ function nops_meta_description() {
     if (is_page('about'))       return 'Kari Kramer Ayala founded New Orleans Property Services in 2007. A Fulbright Scholar and lifelong New Orleanian delivering white-glove boutique real estate.';
     if (is_page('contact'))     return 'Contact Kari Ayala at New Orleans Property Services. Call 504-473-5969 or send a message to start buying, selling, or investing in New Orleans real estate.';
     if (is_home())              return 'Local real estate insight, neighborhood guides, and New Orleans market updates from boutique broker Kari Ayala.';
+    if (is_page_template('page-listing.php')) {
+        $l = nops_listing_meta(get_the_ID());
+        return trim($l['address'] . ' — ' . nops_listing_facts_line($l) . '. Listed by Kari Ayala, New Orleans Property Services. Call 504-473-5969.');
+    }
     if (is_singular())          return wp_strip_all_tags(get_the_excerpt());
     return get_bloginfo('description');
 }
@@ -1174,3 +1178,126 @@ gtag('config', '<?php echo esc_js($id); ?>');
 <?php
 }
 add_action('wp_head', 'nops_analytics', 5);
+
+/* ---------- Client reviews (homepage) ----------
+ * Rendered from data/reviews.json so they sit in the page HTML: no third-party
+ * script, nothing to break, and search engines can read them. The file holds
+ * Kari's own reviews only; Zillow's "team reviews" also cover other agents. */
+function nops_reviews() {
+    $file = get_theme_file_path('data/reviews.json');
+    if (!is_readable($file)) return [];
+    $data = json_decode((string) file_get_contents($file), true);
+    return is_array($data) ? $data : [];
+}
+
+function nops_review_card($r) {
+    $rating = max(1, min(5, (int) ($r['rating'] ?? 5)));
+    ?>
+    <figure class="quote">
+      <div class="quote__stars" role="img" aria-label="<?php echo $rating; ?> out of 5 stars"><?php echo str_repeat('★', $rating); ?></div>
+      <blockquote><p><?php echo esc_html($r['text']); ?></p></blockquote>
+      <figcaption class="quote__by"><div>
+        <div class="quote__name"><?php echo esc_html($r['summary'] ?: 'Client review'); ?></div>
+        <div class="quote__loc"><?php echo esc_html($r['date']); ?> · Zillow review</div>
+      </div></figcaption>
+    </figure>
+    <?php
+}
+
+function nops_render_reviews($visible = 6) {
+    $all = nops_reviews();
+    if (!$all) return;
+    $rest = array_slice($all, $visible);
+    echo '<div class="reviews-grid">';
+    foreach (array_slice($all, 0, $visible) as $r) nops_review_card($r);
+    echo '</div>';
+    if ($rest) {
+        echo '<details class="reviews-more"><summary class="btn btn--ghost">Read more client stories</summary><div class="reviews-grid">';
+        foreach ($rest as $r) nops_review_card($r);
+        echo '</div></details>';
+    }
+}
+
+/* ---------- Kari's own listing pages (template: page-listing.php) ----------
+ * Facts live in post meta so price/status can change without touching the copy. */
+function nops_listing_meta($id) {
+    $g = function ($k) use ($id) { return (string) get_post_meta($id, 'nops_' . $k, true); };
+    $photos = json_decode($g('photos'), true);
+    return [
+        'address' => $g('address'), 'street' => $g('street'), 'city' => $g('city') ?: 'New Orleans',
+        'zip' => $g('zip'), 'price' => (int) $g('price'), 'status' => $g('status') ?: 'For Sale',
+        'beds' => $g('beds'), 'baths' => $g('baths'), 'living' => $g('living'), 'year' => $g('year'),
+        'style' => $g('style'), 'mls' => $g('mls'), 'hood' => $g('hood'), 'hood_url' => $g('hood_url'),
+        'idx_url' => $g('idx_url'), 'photos' => is_array($photos) ? $photos : [],
+    ];
+}
+
+function nops_listing_facts_line($l) {
+    $bits = [];
+    if ($l['price'])  $bits[] = '$' . number_format($l['price']);
+    if ($l['beds'])   $bits[] = $l['beds'] . ' bed';
+    if ($l['baths'])  $bits[] = $l['baths'] . ' bath';
+    if ($l['living']) $bits[] = number_format((int) $l['living']) . ' sq ft';
+    return implode(' · ', $bits);
+}
+
+/* Prints nothing until at least one listing page is published. */
+function nops_render_own_listings() {
+    $pages = get_posts([
+        'post_type' => 'page', 'post_status' => 'publish', 'posts_per_page' => 6,
+        'meta_key' => '_wp_page_template', 'meta_value' => 'page-listing.php',
+        'orderby' => 'date', 'order' => 'DESC',
+    ]);
+    if (!$pages) return;
+    ?>
+<!-- ===== Kari's listings ===== -->
+<section class="section tone-cream" id="kari-listings">
+  <div class="container">
+    <div class="center">
+      <p class="eyebrow">Listed by Kari</p>
+      <h2>Homes Kari is selling now</h2>
+    </div>
+    <div class="grid grid--3" style="margin-top:40px">
+      <?php foreach ($pages as $p) : $l = nops_listing_meta($p->ID); ?>
+      <article class="card post">
+        <?php if ($l['photos']) : ?><div class="post__media" style="background-image:url('<?php echo esc_url($l['photos'][0]); ?>')"></div><?php endif; ?>
+        <div class="post__body">
+          <span class="post__cat"><?php echo esc_html($l['status']); ?></span>
+          <a href="<?php echo esc_url(get_permalink($p)); ?>" class="post__title" style="display:block"><?php echo esc_html($l['street']); ?></a>
+          <p class="post__excerpt"><?php echo esc_html(nops_listing_facts_line($l)); ?></p>
+        </div>
+      </article>
+      <?php endforeach; ?>
+    </div>
+  </div>
+</section>
+    <?php
+}
+
+function nops_listing_schema() {
+    if (!is_page_template('page-listing.php')) return;
+    $id = get_queried_object_id();
+    $l  = nops_listing_meta($id);
+    $schema = [
+        '@context'   => 'https://schema.org',
+        '@type'      => 'RealEstateListing',
+        'name'       => $l['address'],
+        'url'        => get_permalink($id),
+        'image'      => $l['photos'],
+        'mainEntity' => [
+            '@type'   => 'SingleFamilyResidence',
+            'address' => [
+                '@type' => 'PostalAddress', 'streetAddress' => $l['street'],
+                'addressLocality' => $l['city'], 'addressRegion' => 'LA', 'postalCode' => $l['zip'],
+            ],
+            'numberOfBedrooms'       => (int) $l['beds'],
+            'numberOfBathroomsTotal' => (int) $l['baths'],
+            'floorSize' => ['@type' => 'QuantitativeValue', 'value' => (int) $l['living'], 'unitText' => 'sq ft'],
+        ],
+    ];
+    if ($l['price'] && stripos($l['status'], 'sold') === false) {
+        $schema['offers'] = ['@type' => 'Offer', 'price' => $l['price'], 'priceCurrency' => 'USD', 'availability' => 'https://schema.org/InStock'];
+    }
+    echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES) . "</script>\n";
+}
+add_action('wp_head', 'nops_listing_schema', 23);

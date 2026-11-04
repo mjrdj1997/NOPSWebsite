@@ -29,6 +29,8 @@
 <?php nops_search_bar(); ?>
 
 
+<?php nops_render_own_listings(); ?>
+
 <!-- ===== Featured Listings (IDX) ===== -->
 <section class="section" id="featured-listings">
   <div class="container">
@@ -411,10 +413,7 @@
       <p class="eyebrow">Client Stories</p>
       <h2>Trusted across the city</h2>
     </div>
-    <div class="reveal" style="margin-top:48px">
-      <?php echo do_shortcode('[trustindex no-registration=zillow]'); ?>
-    </div>
-    <div class="center" style="margin-top:40px"><a href="https://www.zillow.com/profile/nolakari" target="_blank" rel="noopener" class="btn btn--ghost">★ Read Kari's reviews on Zillow →</a></div>
+    <?php nops_render_reviews(6); ?>
   </div>
 </section>
 
