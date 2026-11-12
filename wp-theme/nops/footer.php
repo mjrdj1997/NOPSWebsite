@@ -15,9 +15,11 @@
       <li><a href="<?php echo esc_url(home_url('/')); ?>">Home</a></li>
       <li><a href="<?php echo esc_url(home_url('/buy/')); ?>">Buy a Home</a></li>
       <li><a href="<?php echo esc_url(home_url('/sell/')); ?>">Sell a Home</a></li>
+      <li><a href="<?php echo esc_url(home_url('/sold/')); ?>">Recently Sold</a></li>
       <li><a href="<?php echo esc_url(home_url('/communities/')); ?>">Communities</a></li>
       <li><a href="<?php echo esc_url(home_url('/journal/')); ?>">Journal</a></li>
       <li><a href="<?php echo esc_url(home_url('/about/')); ?>">About Kari</a></li>
+      <li><a href="<?php echo esc_url(home_url('/es/')); ?>" hreflang="es" lang="es">En español</a></li>
     </ul></div>
     <div><h4>Neighborhoods</h4><ul class="footer-links footer-links--2col">
       <li><a href="<?php echo esc_url(home_url('/garden-district-homes-for-sale/')); ?>">Garden District</a></li>

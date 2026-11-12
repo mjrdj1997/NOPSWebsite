@@ -173,7 +173,7 @@ function nops_spam_signals($f) {
 
     // Blasts in another language/script — Kari's market writes in English.
     $chars = function_exists('mb_strlen') ? mb_strlen($msg, 'UTF-8') : strlen($msg);
-    if ($chars >= 10) {
+    if ($chars >= 10 && empty($f['spanish'])) {   // accents are normal on the Spanish pages
         $ascii = strlen(preg_replace('/[^\x00-\x7F]/u', '', $msg));
         if (($chars - $ascii) / $chars > 0.08) $out['non-english'] = 4;
     }
@@ -251,28 +251,46 @@ function nops_repeat_signals($email, $message) {
 function nops_handle_contact() {
     $ip = nops_client_ip();
 
+    // Which form, in which language, and which page to return to. The return path
+    // must be on this site; anything else falls back to /contact/.
+    $form = (($_POST['nops_form'] ?? '') === 'valuation') ? 'valuation' : 'contact';
+    $lang = (($_POST['nops_lang'] ?? '') === 'es') ? 'es' : 'en';
+    $path = '/' . ltrim(sanitize_text_field(wp_unslash($_POST['nops_return'] ?? '')), '/');
+    $return = (preg_match('#^/[a-z0-9/_-]*$#i', $path) && $path !== '/') ? home_url($path) : home_url('/contact/');
+    $back = function ($ok) use ($return) {
+        wp_safe_redirect(add_query_arg($ok ? 'sent' : 'err', '1', $return) . '#lead-form');
+        exit;
+    };
+
     // Honeypot: silently accept bots without doing anything.
-    if (!empty($_POST['nops_website'])) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
+    if (!empty($_POST['nops_website'])) $back(true);
     if (!isset($_POST['nops_nonce']) || !wp_verify_nonce($_POST['nops_nonce'], 'nops_contact')) {
-        wp_safe_redirect(home_url('/contact/?err=1')); exit;
+        $back(false);
     }
     // Flood control: over the limit is dropped outright (not even stored).
-    if (nops_contact_rate_exceeded($ip)) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
+    if (nops_contact_rate_exceeded($ip)) $back(true);
 
     // wp_unslash first: WordPress slash-escapes $_POST, so without it every
     // apostrophe reaches Kari as "Thomas\'s".
     $first    = sanitize_text_field(wp_unslash($_POST['first_name'] ?? ''));
     $last     = sanitize_text_field(wp_unslash($_POST['last_name'] ?? ''));
+    if ($first === '' && $last === '' && isset($_POST['full_name'])) {
+        $parts = preg_split('/\s+/', trim(sanitize_text_field(wp_unslash($_POST['full_name']))), 2);
+        $first = $parts[0] ?? ''; $last = $parts[1] ?? '';
+    }
+    $address  = sanitize_text_field(wp_unslash($_POST['address'] ?? ''));
+    $timeline = sanitize_text_field(wp_unslash($_POST['timeline'] ?? ''));
     $email    = sanitize_email(wp_unslash($_POST['email'] ?? ''));
     $phone    = sanitize_text_field(wp_unslash($_POST['phone'] ?? ''));
     $interest = sanitize_text_field(wp_unslash($_POST['interest'] ?? ''));
     $message  = sanitize_textarea_field(wp_unslash($_POST['message'] ?? ''));
     $name     = trim("$first $last");
-    if ($name === '' || !is_email($email)) { wp_safe_redirect(home_url('/contact/?err=1')); exit; }
+    if ($form === 'valuation') $interest = 'A home valuation';
+    if ($name === '' || !is_email($email) || ($form === 'valuation' && $address === '')) $back(false);
 
     // Score it: bad/replayed form tokens count as a strong signal too.
     $signals = array_merge(
-        nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'email' => $email, 'message' => $message]),
+        nops_spam_signals(['name' => $name, 'first' => $first, 'last' => $last, 'email' => $email, 'message' => $message, 'spanish' => $lang === 'es']),
         nops_repeat_signals($email, $message)
     );
     $problem = nops_form_token_problem();
@@ -283,15 +301,19 @@ function nops_handle_contact() {
     // Once someone is flagged, their follow-ups today are flagged too.
     if ($is_spam) set_transient('nops_spamer_' . md5(strtolower($email)), 1, DAY_IN_SECONDS);
 
-    $body = "New website inquiry\n\n"
-          . "Name: $name\nEmail: $email\nPhone: $phone\nInterested in: $interest\n\n"
-          . "Message:\n$message\n";
+    $body = ($form === 'valuation' ? "New home value request\n\n" : "New website inquiry\n\n")
+          . "Name: $name\nEmail: $email\nPhone: $phone\nInterested in: $interest\n"
+          . ($address !== ''  ? "Property address: $address\n" : '')
+          . ($timeline !== '' ? "Timeline: $timeline\n" : '')
+          . ($lang === 'es'   ? "Language: Spanish (sent from the Spanish pages; reply in Spanish)\n" : '')
+          . "Sent from: $return\n\n"
+          . "Message:\n" . ($message !== '' ? $message : '(none)') . "\n";
 
     // Persist a copy in wp-admin -> Inquiries (spam included, so nothing is lost).
     wp_insert_post([
         'post_type'    => 'nops_inquiry',
         'post_status'  => 'private',
-        'post_title'   => ($is_spam ? '[SPAM] ' : '') . "$name — $interest",
+        'post_title'   => ($is_spam ? '[SPAM] ' : '') . "$name — $interest" . ($address !== '' ? ": $address" : '') . ($lang === 'es' ? ' (ES)' : ''),
         'post_content' => $is_spam
             ? $body . "\n---\nFlagged as spam (score $score: " . implode(', ', array_keys($signals)) . ") from $ip.\nNo email was sent. If this is a real person, reply to them directly."
             : $body,
@@ -303,16 +325,38 @@ function nops_handle_contact() {
     ]);
 
     // Spam stops here: no notification, and no auto-reply to a forged address.
-    if ($is_spam) { wp_safe_redirect(home_url('/contact/?sent=1')); exit; }
+    if ($is_spam) $back(true);
 
     // Email the owner (recipient filterable; defaults to the WP admin email).
     $to      = apply_filters('nops_contact_recipient', get_option('admin_email'));
     $headers = ['Content-Type: text/plain; charset=UTF-8'];
     $headers[] = 'Reply-To: ' . $name . ' <' . $email . '>';
-    wp_mail($to, "Website inquiry from $name", $body, $headers);
+    $subject = $form === 'valuation' ? "Home value request: $address ($name)" : "Website inquiry from $name";
+    if ($lang === 'es') $subject = '[ES] ' . $subject;
+    wp_mail($to, $subject, $body, $headers);
 
     // Branded HTML auto-reply / confirmation to the submitter.
-    $greet = $first !== '' ? esc_html($first) : 'there';
+    $es = $lang === 'es';
+    $greet = $first !== '' ? esc_html($first) : ($es ? '' : 'there');
+    $t = $es ? [
+        'thanks' => $greet !== '' ? "Gracias, {$greet}." : 'Gracias.',
+        'got'    => 'Recibí su mensaje y le responderé <strong>personalmente</strong>, normalmente en un día hábil.',
+        'urgent' => 'Si es urgente, puede llamarme o enviarme un mensaje de texto al',
+        'call'   => 'Llamar al 504-473-5969',
+        'role'   => 'Corredora y propietaria &middot; New Orleans Property Services',
+        'foot'   => 'Corredora de bienes raíces con licencia &middot; Igualdad de oportunidades en la vivienda',
+        'subj'   => 'Gracias por escribirnos — New Orleans Property Services',
+    ] : [
+        'thanks' => "Thank you, {$greet}.",
+        'got'    => "I've received your message and will get back to you <strong>personally</strong> &mdash; usually within one business day.",
+        'urgent' => "If it's time-sensitive, feel free to call or text me directly at",
+        'call'   => 'Call 504-473-5969',
+        'role'   => 'Broker &amp; Owner &middot; New Orleans Property Services',
+        'foot'   => 'Licensed Real Estate Brokerage &middot; Equal Housing Opportunity',
+        'subj'   => 'Thanks for reaching out — New Orleans Property Services',
+    ];
+    if ($form === 'valuation' && !$es) $t['got'] = "I've received your request for a home value opinion and will get back to you <strong>personally</strong> &mdash; usually within one business day.";
+    if ($form === 'valuation' && $es)  $t['got'] = 'Recibí su solicitud de valoración y le responderé <strong>personalmente</strong>, normalmente en un día hábil.';
     // Hard-code the real domain (over HTTPS) so the link text and destination match a
     // legitimate domain. Deriving this from home_url() yields the bare server IP until DNS
     // cutover, and a friendly-text-hiding-a-raw-IP link is a textbook phishing signal that
@@ -328,32 +372,31 @@ function nops_handle_contact() {
         <div style="font-family:Arial,Helvetica,sans-serif;font-size:10px;color:#a49c92;letter-spacing:2.5px;text-transform:uppercase;margin-top:7px">Boutique Real Estate &middot; Est. 2007</div>
       </td></tr>
       <tr><td style="padding:34px 40px 6px">
-        <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;color:#1a1816;font-weight:normal">Thank you, {$greet}.</h1>
-        <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#403c38">I've received your message and will get back to you <strong>personally</strong> &mdash; usually within one business day.</p>
-        <p style="margin:0 0 26px;font-size:16px;line-height:1.6;color:#403c38">If it's time-sensitive, feel free to call or text me directly at <a href="tel:5044735969" style="color:#cd8c38;text-decoration:none;font-weight:bold">504-473-5969</a>.</p>
+        <h1 style="margin:0 0 16px;font-family:Georgia,'Times New Roman',serif;font-size:24px;line-height:1.25;color:#1a1816;font-weight:normal">{$t['thanks']}</h1>
+        <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#403c38">{$t['got']}</p>
+        <p style="margin:0 0 26px;font-size:16px;line-height:1.6;color:#403c38">{$t['urgent']} <a href="tel:5044735969" style="color:#cd8c38;text-decoration:none;font-weight:bold">504-473-5969</a>.</p>
         <table role="presentation" cellpadding="0" cellspacing="0"><tr><td style="background:#cd8c38;border-radius:40px">
-          <a href="tel:5044735969" style="display:inline-block;padding:13px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold">Call 504-473-5969</a>
+          <a href="tel:5044735969" style="display:inline-block;padding:13px 30px;color:#ffffff;text-decoration:none;font-size:15px;font-weight:bold">{$t['call']}</a>
         </td></tr></table>
       </td></tr>
       <tr><td style="padding:26px 40px 34px">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td style="border-top:1px solid #e8e1d4;padding-top:22px">
           <p style="margin:0;font-family:Georgia,serif;font-size:18px;color:#1a1816">Kari Ayala</p>
-          <p style="margin:3px 0 0;font-size:12px;color:#6b6560;text-transform:uppercase;letter-spacing:1.5px">Broker &amp; Owner &middot; New Orleans Property Services</p>
+          <p style="margin:3px 0 0;font-size:12px;color:#6b6560;text-transform:uppercase;letter-spacing:1.5px">{$t['role']}</p>
           <p style="margin:14px 0 0;font-size:14px;color:#403c38"><a href="tel:5044735969" style="color:#403c38;text-decoration:none">504-473-5969</a> &nbsp;&middot;&nbsp; <a href="{$site}" style="color:#cd8c38;text-decoration:none">neworleanspropertyservices.com</a></p>
         </td></tr></table>
       </td></tr>
       <tr><td align="center" style="background:#1a1816;padding:16px 24px">
-        <p style="margin:0;font-size:11px;color:#a49c92;line-height:1.6">2801 St. Charles Ave, Unit 111B, New Orleans, LA 70115<br>Licensed Real Estate Brokerage &middot; Equal Housing Opportunity</p>
+        <p style="margin:0;font-size:11px;color:#a49c92;line-height:1.6">2801 St. Charles Ave, Unit 111B, New Orleans, LA 70115<br>{$t['foot']}</p>
       </td></tr>
     </table>
   </td></tr>
 </table>
 HTML;
     $ack_headers = ['Content-Type: text/html; charset=UTF-8', 'Reply-To: ' . $to];
-    wp_mail($email, 'Thanks for reaching out — New Orleans Property Services', $ack_html, $ack_headers);
+    wp_mail($email, $t['subj'], $ack_html, $ack_headers);
 
-    wp_safe_redirect(home_url('/contact/?sent=1'));
-    exit;
+    $back(true);
 }
 add_action('admin_post_nops_contact', 'nops_handle_contact');
 add_action('admin_post_nopriv_nops_contact', 'nops_handle_contact');
@@ -1418,3 +1461,116 @@ function nops_sold_document_title($parts) {
     return $parts;
 }
 add_filter('document_title_parts', 'nops_sold_document_title');
+
+/* ---------- Lead form (home value + Spanish contact) ----------
+ * One renderer for the forms outside /contact/. Posts to nops_handle_contact(),
+ * so every form shares the same spam layers, Inquiries log, email and auto-reply.
+ *   type: 'valuation' (address + timeline) or 'contact' (interest + message)
+ *   lang: 'en' or 'es'
+ * The page it sits on is sent as nops_return, and the visitor comes back there
+ * with ?sent=1#lead-form. Query-string pages bypass the page cache, so the
+ * confirmation always shows. */
+function nops_lead_form($type = 'valuation', $lang = 'en', $opts = []) {
+    $es = $lang === 'es';
+    $L = $es ? [
+        'name' => 'Nombre completo', 'first' => 'Nombre', 'last' => 'Apellido', 'email' => 'Correo electrónico',
+        'phone' => 'Teléfono', 'address' => 'Dirección de la propiedad', 'addr_ph' => 'Calle, número y código postal',
+        'timeline' => '¿Cuándo piensa vender?', 'interest' => 'Me interesa', 'msg' => 'Mensaje (opcional)',
+        'msg_ph' => 'Cuéntenos un poco sobre la casa o lo que busca…',
+        'send_v' => 'Solicitar mi valoración', 'send_c' => 'Enviar mensaje',
+        'sent' => 'Gracias. Recibimos su mensaje y Kari le responderá personalmente, normalmente en un día hábil.',
+        'err' => 'Lo sentimos, algo salió mal. Llame al 504-473-5969 o escriba a kari@neworleanspropertyservices.com.',
+        'times' => ['En los próximos 3 meses', 'En 3 a 6 meses', 'En 6 a 12 meses', 'Solo quiero saber cuánto vale'],
+        'interests' => ['Comprar una casa', 'Vender una casa', 'Una valoración de mi casa', 'Mudarme a Nueva Orleans', 'Inversión', 'Tengo una pregunta'],
+        'privacy' => 'Kari usa estos datos solo para responderle. No los compartimos ni los vendemos.',
+    ] : [
+        'name' => 'Full name', 'first' => 'First name', 'last' => 'Last name', 'email' => 'Email',
+        'phone' => 'Phone', 'address' => 'Property address', 'addr_ph' => 'Street address and ZIP',
+        'timeline' => 'When are you thinking of selling?', 'interest' => "I'm interested in", 'msg' => 'Anything Kari should know? (optional)',
+        'msg_ph' => 'Recent updates, condition, questions…',
+        'send_v' => 'Request my home value', 'send_c' => 'Send message',
+        'sent' => "Thank you. Your request has been sent, and Kari will get back to you personally, usually within one business day.",
+        'err' => 'Sorry, something went wrong. Please call 504-473-5969 or email kari@neworleanspropertyservices.com.',
+        'times' => ['In the next 3 months', 'In 3 to 6 months', 'In 6 to 12 months', 'Just curious what it is worth'],
+        'interests' => ['Buying a home', 'Selling a home', 'A home valuation', 'Relocation to New Orleans', 'Investment property', 'Just have a question'],
+        'privacy' => 'Kari uses these details only to reply to you. We never share or sell them.',
+    ];
+    $return = wp_parse_url(get_permalink() ?: home_url('/'), PHP_URL_PATH) ?: '/';
+    if (is_post_type_archive()) $return = wp_parse_url(get_post_type_archive_link(get_post_type()), PHP_URL_PATH);
+    ob_start(); ?>
+<div class="card lead-form" id="lead-form" style="padding:32px 30px;scroll-margin-top:110px">
+  <?php if (!empty($opts['heading'])) : ?><h3 style="margin:0 0 6px"><?php echo esc_html($opts['heading']); ?></h3><?php endif; ?>
+  <?php if (!empty($opts['intro'])) : ?><p style="color:var(--muted);font-size:.95rem;margin:0 0 20px"><?php echo esc_html($opts['intro']); ?></p><?php endif; ?>
+  <?php if (isset($_GET['sent'])) : ?>
+    <p class="form-note" role="status" style="color:#2f7d4f;font-weight:600;background:#eef7f0;border:1px solid #cde8d5;padding:14px 16px;border-radius:8px;margin-bottom:18px"><?php echo esc_html($L['sent']); ?></p>
+  <?php elseif (isset($_GET['err'])) : ?>
+    <p class="form-note" role="status" style="color:#b3402f;font-weight:600;background:#fbeeec;border:1px solid #f0cfc9;padding:14px 16px;border-radius:8px;margin-bottom:18px"><?php echo esc_html($L['err']); ?></p>
+  <?php endif; ?>
+  <form action="<?php echo esc_url(admin_url('admin-post.php')); ?>" method="post" style="display:grid;gap:16px">
+    <input type="hidden" name="action" value="nops_contact">
+    <input type="hidden" name="nops_form" value="<?php echo $type === 'contact' ? 'contact' : 'valuation'; ?>">
+    <input type="hidden" name="nops_lang" value="<?php echo $es ? 'es' : 'en'; ?>">
+    <input type="hidden" name="nops_return" value="<?php echo esc_attr($return); ?>">
+    <?php wp_nonce_field('nops_contact', 'nops_nonce'); ?>
+    <?php echo nops_form_token_fields(); ?>
+    <div style="position:absolute;left:-9999px" aria-hidden="true"><label>Leave this blank<input type="text" name="nops_website" tabindex="-1" autocomplete="off"></label></div>
+    <?php if ($type === 'contact') : ?>
+      <div class="form-row">
+        <div><label class="fl" for="lf-first"><?php echo esc_html($L['first']); ?></label><input id="lf-first" type="text" name="first_name" required autocomplete="given-name"></div>
+        <div><label class="fl" for="lf-last"><?php echo esc_html($L['last']); ?></label><input id="lf-last" type="text" name="last_name" required autocomplete="family-name"></div>
+      </div>
+    <?php else : ?>
+      <div><label class="fl" for="lf-address"><?php echo esc_html($L['address']); ?></label><input id="lf-address" type="text" name="address" required autocomplete="street-address" placeholder="<?php echo esc_attr($L['addr_ph']); ?>"></div>
+      <div><label class="fl" for="lf-name"><?php echo esc_html($L['name']); ?></label><input id="lf-name" type="text" name="full_name" required autocomplete="name"></div>
+    <?php endif; ?>
+    <div class="form-row">
+      <div><label class="fl" for="lf-email"><?php echo esc_html($L['email']); ?></label><input id="lf-email" type="email" name="email" required autocomplete="email"></div>
+      <div><label class="fl" for="lf-phone"><?php echo esc_html($L['phone']); ?></label><input id="lf-phone" type="tel" name="phone" autocomplete="tel"></div>
+    </div>
+    <?php if ($type === 'contact') : ?>
+      <div><label class="fl" for="lf-interest"><?php echo esc_html($L['interest']); ?></label><select id="lf-interest" name="interest"><?php foreach ($L['interests'] as $o) echo '<option>' . esc_html($o) . '</option>'; ?></select></div>
+    <?php else : ?>
+      <div><label class="fl" for="lf-timeline"><?php echo esc_html($L['timeline']); ?></label><select id="lf-timeline" name="timeline"><?php foreach ($L['times'] as $o) echo '<option>' . esc_html($o) . '</option>'; ?></select></div>
+    <?php endif; ?>
+    <div><label class="fl" for="lf-msg"><?php echo esc_html($L['msg']); ?></label><textarea id="lf-msg" name="message" style="min-height:90px" placeholder="<?php echo esc_attr($L['msg_ph']); ?>"></textarea></div>
+    <button class="btn btn--gold" type="submit" style="justify-content:center"><?php echo esc_html($type === 'contact' ? $L['send_c'] : $L['send_v']); ?></button>
+    <p style="margin:0;color:var(--muted);font-size:.82rem"><?php echo esc_html($L['privacy']); ?></p>
+  </form>
+</div>
+    <?php
+    return ob_get_clean();
+}
+
+/* ---------- Spanish pages (/es/ and its child pages) ----------
+ * A page is Spanish when it is /es/ or a child of it. Each declares its English
+ * counterpart, so Google can pair them (hreflang) and visitors can switch. */
+function nops_es_pairs() {
+    return ['es' => '/', 'es/comprar' => '/buy/', 'es/vender' => '/sell/'];
+}
+function nops_is_spanish() {
+    if (!is_page()) return false;
+    $p = get_queried_object();
+    $path = $p ? get_page_uri($p) : '';
+    return $path === 'es' || strpos($path, 'es/') === 0;
+}
+add_filter('language_attributes', function ($out) {
+    return nops_is_spanish() ? preg_replace('/lang="[^"]*"/', 'lang="es-US"', $out) : $out;
+});
+function nops_hreflang() {
+    $pairs = nops_es_pairs();
+    $here = '';
+    if (nops_is_spanish()) {
+        $here = get_page_uri(get_queried_object());
+        if (!isset($pairs[$here])) return;
+        $es = home_url('/' . $here . '/'); $en = home_url($pairs[$here]);
+    } else {
+        $path = is_front_page() ? '/' : (is_page() ? '/' . get_page_uri(get_queried_object()) . '/' : '');
+        $es_path = array_search($path, $pairs, true);
+        if ($es_path === false || !get_page_by_path($es_path)) return;
+        $en = home_url($path); $es = home_url('/' . $es_path . '/');
+    }
+    echo '<link rel="alternate" hreflang="en-US" href="' . esc_url($en) . "\">\n";
+    echo '<link rel="alternate" hreflang="es-US" href="' . esc_url($es) . "\">\n";
+    echo '<link rel="alternate" hreflang="x-default" href="' . esc_url($en) . "\">\n";
+}
+add_action('wp_head', 'nops_hreflang', 2);

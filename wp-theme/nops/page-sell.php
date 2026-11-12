@@ -19,11 +19,10 @@
         <li>Pricing strategy tailored to today's market</li>
         <li>Honest guidance on prep, timing, and improvements</li>
       </ul>
-      <div style="margin-top:28px"><a href="/contact/" class="btn btn--gold">Request My Valuation →</a></div>
+      <p style="margin-top:24px">Curious what's selling near you? <a href="<?php echo esc_url(home_url('/sold/')); ?>" style="color:var(--brass);font-weight:600">See homes we've sold &rarr;</a></p>
     </div>
-    <div class="split__media reveal">
-      <img src="<?php echo esc_url(get_theme_file_uri('assets/nola/gd-2008.jpg')); ?>">
-      <div class="split__badge"><div class="num">Days</div><div class="lbl">Homes priced right sell faster and closer to ask</div></div>
+    <div class="reveal">
+      <?php echo nops_lead_form('valuation', 'en', ['heading' => 'Request your free home value', 'intro' => 'Kari will look at your home and recent sales nearby, then get back to you personally.']); ?>
     </div>
   </div>
 </div></section>
@@ -56,7 +55,7 @@
 <section class="section"><div class="container"><div class="cta-band reveal">
   <p class="eyebrow" style="justify-content:center;color:var(--brass-soft)">Ready to Sell?</p>
   <h2>Let's talk about your home.</h2>
-  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:24px"><a href="/contact/" class="btn btn--gold">Get My Free Valuation →</a><a href="tel:5044735969" class="btn btn--outline">📞 504-473-5969</a></div>
+  <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:24px"><a href="#lead-form" class="btn btn--gold">Get My Free Valuation &rarr;</a><a href="tel:5044735969" class="btn btn--outline">📞 504-473-5969</a></div>
 </div></div></section>
 
 <?php get_footer(); ?>

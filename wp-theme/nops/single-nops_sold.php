@@ -37,9 +37,11 @@ $review = nops_sold_review($m, $id);
     <div style="margin:40px 0 0"><p class="eyebrow">From a seller we worked with</p><?php nops_review_card($review); ?></div>
   <?php endif; ?>
 
-  <div class="card" style="padding:30px;margin-top:40px">
-    <h2 style="margin-top:0;font-size:1.6rem">Thinking of selling<?php echo $m['hood'] ? ' in ' . esc_html($m['hood']) : ''; ?>?</h2>
-    <p>Kari can tell you what homes like yours are selling for right now, and what it would take to get yours sold.</p>
+  <div style="margin-top:44px">
+    <?php echo nops_lead_form('valuation', 'en', [
+        'heading' => 'Thinking of selling' . ($m['hood'] ? ' in ' . $m['hood'] : '') . '?',
+        'intro'   => 'Tell Kari about your home and she will tell you what homes like it are selling for right now.',
+    ]); ?>
     <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:18px">
       <a class="btn btn--gold" href="tel:5044735969" style="color:#fff">Call Kari: 504-473-5969</a>
       <a class="btn btn--ghost" href="<?php echo esc_url(home_url('/sell/')); ?>">How Kari sells homes</a>
