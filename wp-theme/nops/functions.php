@@ -592,6 +592,12 @@ function nops_listing_url($fields = []) {
  * thousands of login attempts. There is one author here and no author archives
  * in the design, so both can simply go away for logged-out visitors.
  * ------------------------------------------------------------------ */
+/* The core users sitemap lists /author/<slug>/ for every author: the same pointer
+ * at the admin account, and those archives redirect home anyway. */
+add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
+    return $name === 'users' ? false : $provider;
+}, 10, 2);
+
 function nops_block_user_enumeration() {
     if (is_admin() || is_user_logged_in()) return;
     if (isset($_GET['author']) || is_author()) {
@@ -1349,8 +1355,10 @@ function nops_hood_landing_url($hood) {
 function nops_sold_meta($id) {
     $g = function ($k) use ($id) { return trim((string) get_post_meta($id, 'nops_' . $k, true)); };
     $zip  = $g('zip');
-    // ZIP-derived area is approximate (a ZIP spans several neighborhoods); nops_hood overrides it.
-    $hood = $g('hood') ?: nops_zip_to_hood($zip);
+    // ZIP-derived area is approximate (a ZIP spans several neighborhoods); nops_hood overrides
+    // it, and nops_hood = "-" shows no area at all (for addresses we can't place with confidence).
+    $hood = $g('hood');
+    $hood = $hood === '-' ? '' : ($hood ?: nops_zip_to_hood($zip));
     $date = $g('sold_date');
     $ts   = $date ? strtotime($date) : 0;
     return [
