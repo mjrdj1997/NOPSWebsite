@@ -13,11 +13,11 @@ $imgmap = [
     'garden-district-homes-for-sale' => 'gardendistrict-nops.jpg',
     'uptown-homes-for-sale'          => 'uptown-nops.jpg',
     'french-quarter-homes-for-sale'  => 'french-quarter-nops.jpg',
-    'marigny-homes-for-sale'         => 'marigny-nops.jpg',
+    'marigny-homes-for-sale'         => 'marigny-royal-st.jpg',
     'bywater-homes-for-sale'         => 'bywater-cottage.jpg',
     'lakeview-homes-for-sale'        => 'lakeview-nops.jpg',
     'mid-city-homes-for-sale'        => 'midcity-nops.jpg',
-    'irish-channel-homes-for-sale'   => 'shotgun-01.jpg',
+    'irish-channel-homes-for-sale'   => 'irish-channel-pleasant-st.jpg',
 ];
 $imgfile = isset($imgmap[$slug]) ? $imgmap[$slug] : 'gd-2008.jpg';
 $img  = get_theme_file_uri('assets/nola/' . $imgfile);
