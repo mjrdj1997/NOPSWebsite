@@ -1241,14 +1241,16 @@ function nops_listing_facts_line($l) {
     return implode(' · ', $bits);
 }
 
-/* Prints nothing until at least one listing page is published. */
+/* Prints nothing until at least one listing page is published.
+ * Returns whether it printed, so the homepage can drop the IDX Featured Gallery,
+ * which shows the same office listings again. */
 function nops_render_own_listings() {
     $pages = get_posts([
         'post_type' => 'page', 'post_status' => 'publish', 'posts_per_page' => 6,
         'meta_key' => '_wp_page_template', 'meta_value' => 'page-listing.php',
         'orderby' => 'date', 'order' => 'DESC',
     ]);
-    if (!$pages) return;
+    if (!$pages) return false;
     ?>
 <!-- ===== Kari's listings ===== -->
 <section class="section tone-cream" id="kari-listings">
@@ -1256,6 +1258,7 @@ function nops_render_own_listings() {
     <div class="center">
       <p class="eyebrow">Listed by Kari</p>
       <h2>Homes Kari is selling now</h2>
+      <p class="lead center">Looking for something else? <a href="<?php echo esc_url(nops_listing_url()); ?>">Search every home for sale &rarr;</a></p>
     </div>
     <div class="grid grid--3" style="margin-top:40px">
       <?php foreach ($pages as $p) : $l = nops_listing_meta($p->ID); ?>
@@ -1272,6 +1275,7 @@ function nops_render_own_listings() {
   </div>
 </section>
     <?php
+    return true;
 }
 
 function nops_listing_schema() {

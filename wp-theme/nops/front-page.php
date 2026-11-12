@@ -29,9 +29,10 @@
 <?php nops_search_bar(); ?>
 
 
-<?php nops_render_own_listings(); ?>
+<?php $nops_has_own_listings = nops_render_own_listings(); ?>
 
-<!-- ===== Featured Listings (IDX) ===== -->
+<?php if (!$nops_has_own_listings) : ?>
+<!-- ===== Featured Listings (IDX): only when Kari has no listing pages of her own ===== -->
 <section class="section" id="featured-listings">
   <div class="container">
     <div class="center reveal">
@@ -44,6 +45,7 @@
     </div>
   </div>
 </section>
+<?php endif; ?>
 
 
 <!-- ===== AI Home Concierge ===== -->
