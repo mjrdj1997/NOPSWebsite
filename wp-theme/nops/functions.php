@@ -1050,6 +1050,11 @@ function nops_meta_description() {
         $l = nops_listing_meta(get_the_ID());
         return trim($l['address'] . ' — ' . nops_listing_facts_line($l) . '. Listed by Kari Ayala, New Orleans Property Services. Call 504-473-5969.');
     }
+    if (is_singular('nops_sold')) {
+        $m = nops_sold_meta(get_the_ID());
+        return trim(nops_sold_summary($m) . ' ' . nops_sold_facts_line($m) . '. Thinking of selling? Call Kari Ayala at 504-473-5969.');
+    }
+    if (is_post_type_archive('nops_sold')) return 'Homes sold by New Orleans Property Services across Uptown, the Garden District, Mid-City, Lakeview and more. Thinking of selling? Call Kari Ayala at 504-473-5969.';
     if (is_singular())          return wp_strip_all_tags(get_the_excerpt());
     return get_bloginfo('description');
 }
@@ -1305,3 +1310,103 @@ function nops_listing_schema() {
     echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES) . "</script>\n";
 }
 add_action('wp_head', 'nops_listing_schema', 23);
+
+/* ---------- Recently sold (post type nops_sold, URLs /sold/<address>/) ----------
+ * One page per home the brokerage SOLD (seller side, from Kari's sales history).
+ * Buyer-side sales deliberately get no page: an address next to "represented the
+ * buyer" tells the world where a client now lives. Credit goes to the brokerage,
+ * not Kari personally, because the history is team sales. No prices: the archive
+ * has none and MLS display rules govern them. Facts live in nops_* post meta;
+ * the editor is for Kari's own note about the sale, shown only when she writes one. */
+function nops_register_sold_cpt() {
+    register_post_type('nops_sold', [
+        'labels' => [
+            'name' => 'Sold Homes', 'singular_name' => 'Sold Home', 'add_new_item' => 'Add Sold Home',
+            'edit_item' => 'Edit Sold Home', 'all_items' => 'All Sold Homes', 'menu_name' => 'Sold Homes',
+        ],
+        'public'       => true,
+        'has_archive'  => 'sold',
+        'rewrite'      => ['slug' => 'sold', 'with_front' => false],
+        'menu_icon'    => 'dashicons-admin-home',
+        'menu_position'=> 21,
+        'supports'     => ['title', 'editor', 'thumbnail', 'custom-fields'],
+        'show_in_rest' => true,
+    ]);
+}
+add_action('init', 'nops_register_sold_cpt');
+
+/* Neighborhood landing pages that exist on the site, keyed by area label. */
+function nops_hood_landing_url($hood) {
+    $pages = [
+        'Garden District' => '/garden-district-homes-for-sale/', 'Uptown' => '/uptown-homes-for-sale/',
+        'French Quarter'  => '/french-quarter-homes-for-sale/',  'Marigny' => '/marigny-homes-for-sale/',
+        'Bywater'         => '/bywater-homes-for-sale/',         'Lakeview' => '/lakeview-homes-for-sale/',
+        'Mid-City'        => '/mid-city-homes-for-sale/',        'Irish Channel' => '/irish-channel-homes-for-sale/',
+    ];
+    return isset($pages[$hood]) ? home_url($pages[$hood]) : '';
+}
+
+function nops_sold_meta($id) {
+    $g = function ($k) use ($id) { return trim((string) get_post_meta($id, 'nops_' . $k, true)); };
+    $zip  = $g('zip');
+    // ZIP-derived area is approximate (a ZIP spans several neighborhoods); nops_hood overrides it.
+    $hood = $g('hood') ?: nops_zip_to_hood($zip);
+    $date = $g('sold_date');
+    $ts   = $date ? strtotime($date) : 0;
+    return [
+        'street' => $g('street') ?: get_the_title($id), 'city' => $g('city') ?: 'New Orleans', 'zip' => $zip,
+        'beds' => $g('beds'), 'baths' => $g('baths'), 'sqft' => (int) preg_replace('/\D/', '', $g('sqft')),
+        'side' => $g('side'), 'sold_date' => $date, 'sold_label' => $ts ? date_i18n('F Y', $ts) : '',
+        'hood' => $hood, 'hood_url' => nops_hood_landing_url($hood),
+    ];
+}
+
+function nops_sold_facts_line($m) {
+    $bits = [];
+    if ($m['beds'])  $bits[] = $m['beds'] . ' bed';
+    if ($m['baths']) $bits[] = $m['baths'] . ' bath';
+    if ($m['sqft'])  $bits[] = number_format($m['sqft']) . ' sq ft';
+    return implode(' · ', $bits);
+}
+
+/* One sentence of plain fact, so every page says something specific to that home. */
+function nops_sold_summary($m) {
+    $home = [];
+    if ($m['beds'])  $home[] = $m['beds'] . '-bedroom';
+    if ($m['baths']) $home[] = $m['baths'] . '-bath';
+    $what  = $home ? 'this ' . implode(', ', $home) . ' home' : 'this home';
+    $where = $m['hood'] ? ' in the ' . $m['hood'] . ' area' : ' in ' . $m['city'];
+    $when  = $m['sold_label'] ? ', which sold in ' . $m['sold_label'] : '';
+    $who   = stripos($m['side'], 'buyer') !== false
+        ? 'New Orleans Property Services represented both sides of the sale of '
+        : 'New Orleans Property Services represented the seller of ';
+    return $who . $what . $where . $when . '.';
+}
+
+/* A seller's review to sit beside the sale: same area when one exists, otherwise any
+ * seller review, rotated by post ID so the pages don't all repeat the same quote. */
+function nops_sold_review($m, $id) {
+    $sellers = array_values(array_filter(nops_reviews(), function ($r) {
+        return stripos($r['summary'] ?? '', 'sold') !== false;
+    }));
+    if (!$sellers) return null;
+    $areas = ['Uptown' => ['Uptown', 'Audubon', 'Carrollton'], 'Algiers Point' => ['Algiers']];
+    foreach ($areas[$m['hood']] ?? [$m['hood']] as $word) {
+        if ($word === '') continue;
+        foreach ($sellers as $r) if (stripos($r['summary'], $word) !== false) return $r;
+    }
+    // No same-area review: don't show one captioned with a different neighborhood.
+    $general = array_values(array_filter($sellers, function ($r) { return stripos($r['summary'], ' in ') === false; }));
+    return $general ? $general[$id % count($general)] : null;
+}
+
+function nops_sold_document_title($parts) {
+    if (is_singular('nops_sold')) {
+        $m = nops_sold_meta(get_queried_object_id());
+        $parts['title'] = 'Sold: ' . $m['street'] . ', ' . $m['city'];
+    } elseif (is_post_type_archive('nops_sold')) {
+        $parts['title'] = 'Recently Sold Homes in New Orleans';
+    }
+    return $parts;
+}
+add_filter('document_title_parts', 'nops_sold_document_title');
